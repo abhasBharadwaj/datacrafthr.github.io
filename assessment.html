@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeopleIQ — HR Domain Assessments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f5f0;--ink:#111118;--card:#fff;--muted:#6b7076;--border:#e4e2db;
+  --shadow:0 2px 16px rgba(17,17,24,.07);--shadow-lg:0 8px 40px rgba(17,17,24,.13);
+  --ac:#00897b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(247,245,240,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:60px}
+.tlogo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none}
+.tgem{width:20px;height:20px;background:var(--ink);border-radius:5px;display:grid;place-items:center}
+.tgem-dot{width:8px;height:8px;background:var(--bg);border-radius:2px;display:block}
+.tbback{font-size:.85rem;color:var(--muted);cursor:pointer;display:none;align-items:center;gap:6px;border:none;background:none;font-family:inherit;transition:color .2s;padding:0}
+.tbback:hover{color:var(--ink)}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;padding-top:60px}
+.screen.on{display:block}
+
+/* ── HUB ── */
+#hub{padding:56px 40px 80px}
+.hub-head{max-width:600px;margin:0 auto 48px;text-align:center}
+.eyebrow{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.hub-title{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:14px}
+.hub-sub{font-size:.97rem;color:var(--muted);line-height:1.7;max-width:460px;margin:0 auto}
+
+.domain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;max-width:1020px;margin:0 auto}
+.dtile{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:30px;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden;text-decoration:none;display:block;color:var(--ink)}
+.dtile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.dtile-bar{width:100%;height:4px;border-radius:2px;margin-bottom:24px;transform:scaleX(.25);transform-origin:left;transition:transform .35s ease}
+.dtile:hover .dtile-bar{transform:scaleX(1)}
+.dtile-icon{font-size:2.1rem;margin-bottom:14px;display:block}
+.dtile-name{font-family:'Syne',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:7px}
+.dtile-desc{font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.dtile-foot{display:flex;align-items:center;justify-content:space-between}
+.dtile-tags{display:flex;gap:5px;flex-wrap:wrap}
+.dtile-tag{font-size:.69rem;font-weight:600;padding:2px 8px;border-radius:100px;background:var(--bg)}
+.dtile-arrow{font-size:1.1rem;color:var(--muted);transition:transform .2s}
+.dtile:hover .dtile-arrow{transform:translateX(4px)}
+.dtile-done{position:absolute;top:14px;right:14px;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:100px;background:#e8f5e9;color:#2e7d32;display:none}
+
+/* ── QUIZ SCREEN ── */
+#quiz{background:var(--bg)}
+.quiz-wrap{display:grid;grid-template-columns:256px 1fr;min-height:calc(100vh - 60px)}
+
+.qsidebar{background:var(--card);border-right:1px solid var(--border);padding:28px 20px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.qs-dname{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:4px}
+.qs-dsub{font-size:.74rem;color:var(--muted);margin-bottom:18px;line-height:1.4}
+.qs-step{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;font-size:.79rem;color:var(--muted);transition:background .15s}
+.qs-step.cur{background:var(--bg);color:var(--ink);font-weight:600}
+.qs-step.done{color:var(--ink)}
+.qs-num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:grid;place-items:center;font-size:.67rem;font-weight:700;flex-shrink:0;color:var(--muted);transition:all .15s}
+.qs-step.cur .qs-num{border-color:var(--ac);color:var(--ac)}
+.qs-step.done .qs-num{background:var(--ink);border-color:var(--ink);color:#f7f5f0}
+.qs-area{font-size:.79rem;line-height:1.3}
+.qs-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+.qs-barlabel{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.qs-bartrack{height:5px;background:var(--bg);border-radius:100px;overflow:hidden}
+.qs-barfill{height:100%;border-radius:100px;transition:width .4s ease}
+.qs-pct{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-top:5px}
+
+.qmain{padding:44px 52px;max-width:720px}
+.qa-top{font-size:.73rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-bottom:13px}
+.qa-q{font-family:'Syne',sans-serif;font-size:clamp(1.1rem,2.5vw,1.38rem);font-weight:700;letter-spacing:-.015em;line-height:1.35;margin-bottom:9px}
+.qa-hint{font-size:.85rem;color:var(--muted);margin-bottom:26px;line-height:1.5}
+
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:15px 17px;border-radius:12px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .14s}
+.opt:hover{border-color:#aaa;background:#fafaf8}
+.opt.sel{background:color-mix(in srgb,var(--ac) 6%,white);border-color:var(--ac)}
+.opt.best{border-color:#2e7d32;background:#f0f8f0}
+.opt.miss{border-color:#c62828;background:#fef6f6}
+.opt.lock{pointer-events:none}
+.opt-key{width:26px;height:26px;border-radius:6px;flex-shrink:0;border:1.5px solid var(--border);display:grid;place-items:center;font-size:.69rem;font-weight:700;color:var(--muted);transition:all .14s}
+.opt.sel .opt-key{border-color:var(--ac);color:var(--ac)}
+.opt.best .opt-key{border-color:#2e7d32;color:#2e7d32;background:#e8f5e9}
+.opt.miss .opt-key{border-color:#c62828;color:#c62828}
+.opt-text{font-size:.89rem;line-height:1.45;padding-top:1px}
+
+.scale-wrap{display:flex;flex-direction:column;gap:11px}
+.scale-btns{display:flex;gap:7px}
+.sbtn{flex:1;padding:13px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--card);text-align:center;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .14s;color:var(--muted);font-family:inherit}
+.sbtn:hover{border-color:#aaa;color:var(--ink)}
+.sbtn.on{border-color:var(--ac);color:var(--ac);background:color-mix(in srgb,var(--ac) 6%,white)}
+.scale-ends{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+
+.insight{margin-top:16px;padding:15px 17px;border-radius:11px;background:#fffde7;border:1px solid #f9a825;display:none;gap:11px;align-items:flex-start}
+.insight.on{display:flex}
+.ins-ico{font-size:1.1rem;flex-shrink:0;padding-top:1px}
+.ins-head{font-size:.69rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e65100;margin-bottom:4px}
+.ins-text{font-size:.83rem;line-height:1.65;color:#5d4037}
+.ins-bench{margin-top:7px;font-size:.77rem;font-weight:600;color:#1b5e20}
+
+.qfoot{display:flex;align-items:center;justify-content:space-between;padding-top:26px;margin-top:28px;border-top:1px solid var(--border)}
+.qdots{display:flex;gap:4px}
+.qdot{width:5px;height:5px;border-radius:50%;background:var(--border)}
+.qdot.on{background:var(--ink)}
+.qdot.cur{background:var(--muted);width:14px;border-radius:3px}
+.btn-next{background:var(--ink);color:#f7f5f0;padding:12px 28px;border-radius:100px;font-size:.9rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:opacity .2s,transform .2s}
+.btn-next:disabled{opacity:.3;cursor:not-allowed}
+.btn-next:not(:disabled):hover{transform:translateY(-1px)}
+
+/* ── RESULTS ── */
+#results{background:var(--bg)}
+.res-wrap{max-width:920px;margin:0 auto;padding:44px 38px 80px}
+
+.score-hero{background:var(--card);border:1.5px solid var(--border);border-radius:22px;padding:36px;margin-bottom:24px;display:flex;align-items:center;gap:36px;flex-wrap:wrap}
+.sh-ring{position:relative;width:136px;height:136px;flex-shrink:0}
+.sh-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--bg);stroke-width:10}
+.ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.25,.46,.45,.94)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;line-height:1}
+.ring-lbl{font-size:.68rem;color:var(--muted);margin-top:2px}
+.sh-body{flex:1}
+.sh-dom{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+.sh-lvl{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;line-height:1.1}
+.sh-desc{font-size:.88rem;color:var(--muted);line-height:1.65;max-width:460px}
+
+.slabel{font-size:.69rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:28px}
+.subcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.subcard{background:var(--card);border:1.5px solid var(--border);border-radius:13px;padding:16px}
+.sc-lbl{font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:7px}
+.sc-val{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:5px}
+.sc-bar{height:4px;background:var(--bg);border-radius:100px;overflow:hidden;margin-bottom:5px}
+.sc-fill{height:100%;border-radius:100px;transition:width .8s ease}
+.sc-stat{font-size:.71rem;color:var(--muted)}
+
+.gaps{display:flex;flex-direction:column;gap:13px}
+.gcard{background:var(--card);border:1.5px solid var(--border);border-radius:15px;padding:22px;display:flex;gap:16px;transition:border-color .2s}
+.gcard:hover{border-color:#bbb}
+.gico{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;font-size:1.2rem}
+.gbody{flex:1}
+.gprio{font-size:.67rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.gtitle{font-family:'Syne',sans-serif;font-size:.93rem;font-weight:700;margin-bottom:5px}
+.gtext{font-size:.83rem;color:var(--muted);line-height:1.6}
+.gsteps{margin-top:9px;display:flex;flex-direction:column;gap:5px}
+.gstep{font-size:.79rem;display:flex;align-items:flex-start;gap:7px;line-height:1.4}
+.gsn{width:17px;height:17px;border-radius:50%;background:var(--bg);font-size:.61rem;font-weight:700;display:grid;place-items:center;flex-shrink:0;margin-top:1px}
+.gimpact{display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:100px;background:var(--bg)}
+
+.strgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.strcard{background:var(--card);border:1.5px solid var(--border);border-radius:13px;padding:16px;display:flex;gap:10px;align-items:flex-start}
+.str-ic{font-size:1.2rem;flex-shrink:0}
+.str-t{font-size:.85rem;font-weight:600;margin-bottom:3px}
+.str-d{font-size:.78rem;color:var(--muted);line-height:1.55}
+
+.rescta{background:var(--ink);color:#f7f5f0;border-radius:18px;padding:32px 36px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:28px}
+.rcta-t{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:5px}
+.rcta-s{font-size:.84rem;color:rgba(247,245,240,.55);line-height:1.5}
+.rcta-btns{display:flex;gap:9px;flex-wrap:wrap;flex-shrink:0}
+.btn-lt{background:#f7f5f0;color:var(--ink);padding:11px 22px;border-radius:100px;font-size:.86rem;font-weight:700;text-decoration:none;transition:transform .2s;display:inline-block;white-space:nowrap}
+.btn-lt:hover{transform:translateY(-2px)}
+.btn-gh{background:transparent;color:rgba(247,245,240,.6);border:1.5px solid rgba(247,245,240,.18);padding:11px 22px;border-radius:100px;font-size:.86rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:border-color .2s}
+.btn-gh:hover{border-color:rgba(247,245,240,.4);color:#f7f5f0}
+
+/* Try another domain strip */
+.more-domains{margin-top:20px}
+.more-label{font-size:.69rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.more-grid{display:flex;gap:10px;flex-wrap:wrap}
+.more-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--card);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;color:var(--ink)}
+.more-btn:hover{border-color:#aaa;background:#fafaf8}
+.more-btn.completed{background:#f0f8f0;border-color:#a5d6a7;color:#2e7d32}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;z-index:99;background:var(--ink);color:#f7f5f0;padding:11px 18px;border-radius:11px;font-size:.83rem;font-weight:500;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow-lg);transform:translateY(64px);opacity:0;transition:all .4s cubic-bezier(.175,.885,.32,1.275)}
+.toast.on{transform:translateY(0);opacity:1}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.qa-anim{animation:fadeUp .28s ease both}
+
+@media(max-width:760px){
+  .topbar{padding:0 20px}
+  .quiz-wrap{grid-template-columns:1fr}
+  .qsidebar{display:none}
+  .qmain{padding:20px 18px}
+  #hub{padding:36px 16px 60px}
+  .res-wrap{padding:28px 16px 60px}
+  .score-hero{flex-direction:column;gap:20px}
+  .rescta{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="tlogo" href="index.html"><div class="tgem"><span class="tgem-dot"></span></div>PeopleIQ</a>
+  <button class="tbback" id="tbback" onclick="goHub()">← All Assessments</button>
+</div>
+
+<!-- HUB -->
+<div class="screen on" id="hub">
+  <div class="hub-head">
+    <div class="eyebrow">HR Strategy Assessments</div>
+    <h1 class="hub-title">Pick your domain</h1>
+    <p class="hub-sub">Each assessment is 10 focused questions — about 5 minutes. You'll get a specific gap analysis and prioritised action steps based on your answers.</p>
+  </div>
+  <div class="domain-grid" id="domain-grid"></div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="quiz">
+  <div class="quiz-wrap">
+    <div class="qsidebar" id="qsidebar">
+      <div class="qs-dname" id="qs-dname"></div>
+      <div class="qs-dsub">Complete all 10 to see your gap analysis</div>
+      <div class="qs-foot">
+        <div class="qs-barlabel">Progress</div>
+        <div class="qs-bartrack"><div class="qs-barfill" id="qs-fill" style="width:0%"></div></div>
+        <div class="qs-pct" id="qs-pct">0%</div>
+      </div>
+    </div>
+    <div class="qmain">
+      <div id="qa-block">
+        <div class="qa-top" id="qa-top"></div>
+        <div class="qa-q" id="qa-q"></div>
+        <div class="qa-hint" id="qa-hint"></div>
+        <div id="qa-input"></div>
+        <div class="insight" id="qa-insight">
+          <div class="ins-ico">💡</div>
+          <div>
+            <div class="ins-head">Industry Insight</div>
+            <div class="ins-text" id="ins-text"></div>
+            <div class="ins-bench" id="ins-bench"></div>
+          </div>
+        </div>
+      </div>
+      <div class="qfoot">
+        <div class="qdots" id="qdots"></div>
+        <button class="btn-next" id="btn-next" disabled onclick="nextQ()">Continue →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="results">
+  <div class="res-wrap" id="res-wrap"></div>
+</div>
+
+<div class="toast" id="toast"><span id="tico"></span><span id="tmsg"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DOMAIN DATA
+// ═══════════════════════════════════════════════
+const DOMAINS = [
+  {
+    id:'attrition', name:'Attrition & Retention', icon:'📉', color:'#00897b',
+    desc:'Understand why people leave and how to keep your best talent longer.',
+    tags:['Exit Analysis','Flight Risk','Cost Tracking'],
+    qs:[
+      { area:'Exit Process', cat:'Exit Intelligence', type:'mcq',
+        q:'When an employee hands in their notice, what typically happens next?',
+        hint:'Think about your last 5 departures — what was the actual process?',
+        opts:[
+          {t:'Structured HR exit interview conducted within 2 weeks; data entered into a tracking system and themes reviewed quarterly',s:4},
+          {t:'Informal conversation with HR or manager, sometimes written down',s:3},
+          {t:'We ask a few questions but rarely record answers formally',s:2},
+          {t:'We process the resignation and focus on replacing the role',s:0},
+        ],
+        insight:'32% of HR teams track exit reasons systematically. Those who do and act on the patterns reduce attrition by 23% within 12 months.',
+        bench:'📊 Top-quartile orgs conduct structured exit analysis for 90%+ of departures',
+      },
+      { area:'Attrition Measurement', cat:'Data & Tracking', type:'mcq',
+        q:'How do you calculate and review your voluntary attrition rate?',
+        opts:[
+          {t:'Calculated monthly, broken down by department, manager, level, and tenure — reviewed in leadership meetings',s:4},
+          {t:'Calculated quarterly or annually and shared with HR leadership',s:3},
+          {t:'We know the overall number but don\'t break it down meaningfully',s:2},
+          {t:'We don\'t formally calculate a voluntary attrition rate',s:0},
+        ],
+        insight:'A single company-wide number hides the real story. Segmented data reveals which managers, teams, and tenure bands are driving turnover — and where to focus.',
+        bench:'📊 Companies lose 47% more talent from the 1–2 year tenure band than they typically realise',
+      },
+      { area:'Root Cause Clarity', cat:'Root Cause', type:'scale',
+        scaleMin:'No real idea', scaleMax:'Data-backed certainty',
+        q:'How confident are you that you know the real top 3 reasons people leave your organisation?',
+        insight:'Top 2024 exit drivers: lack of career growth (41%), manager relationship (38%), below-market pay (34%), burnout (29%). Guessing leads to wrong, expensive interventions.',
+        bench:'📊 68% of HR leaders overestimate pay as the driver while underweighting manager quality',
+      },
+      { area:'Financial Quantification', cat:'Business Case', type:'mcq',
+        q:'Do you formally calculate the total cost of each employee departure?',
+        opts:[
+          {t:'Yes — full cost including recruitment, onboarding, lost productivity, knowledge loss, and team disruption',s:4},
+          {t:'We estimate recruitment and onboarding costs only',s:3},
+          {t:'We use a rough rule of thumb like "1× annual salary"',s:2},
+          {t:'We don\'t formally track the financial cost of losing an employee',s:0},
+        ],
+        insight:'True replacement cost = 50–200% of annual salary when all factors are included. Quantifying this creates the business case for retention investment.',
+        bench:'📊 HR teams that quantify attrition cost are 2.4× more likely to receive retention budget',
+      },
+      { area:'Predictive Capability', cat:'Early Warning', type:'mcq',
+        q:'How do you spot employees who might be planning to leave before they resign?',
+        opts:[
+          {t:'Predictive model using engagement, performance, tenure, pay gaps, and absence data — with automated manager alerts',s:4},
+          {t:'Manager check-ins and informal signals logged in a flight-risk register',s:3},
+          {t:'Annual engagement scores used as a rough proxy',s:2},
+          {t:'We find out when they hand in their notice',s:0},
+        ],
+        insight:'Predictive attrition models identify 70–80% of resignations 60–90 days in advance — giving managers a meaningful window to intervene before the decision is final.',
+        bench:'📊 22% of Fortune 500 companies now use predictive attrition scoring at manager level',
+      },
+      { area:'Manager Readiness', cat:'Manager Capability', type:'mcq',
+        q:'How equipped are your managers to have effective retention conversations?',
+        opts:[
+          {t:'Trained in retention conversations, with access to team engagement data and coaching support',s:4},
+          {t:'Some managers are naturally good at this; quality varies significantly',s:3},
+          {t:'Managers escalate to HR when they sense someone might leave',s:2},
+          {t:'Managers have no specific training or support for retention',s:0},
+        ],
+        insight:'Manager quality explains 38% of variance in individual attrition rates. Equipping managers with data and conversation skills is the single highest-leverage retention action.',
+        bench:'📊 Teams with trained, data-equipped managers have 28% lower attrition than reactive teams',
+      },
+      { area:'Intervention Speed', cat:'Responsiveness', type:'scale',
+        scaleMin:'No process — slow or ad hoc', scaleMax:'Fast, structured protocol within days',
+        q:'When you identify a flight risk, how quickly can your organisation respond?',
+        insight:'60% of employees who signal intent to leave and receive a meaningful conversation within 2 weeks stay for at least 12 more months.',
+        bench:'📊 Average intervention lag: reactive orgs = 6 weeks, data-driven orgs = 8 days',
+      },
+      { area:'New Hire Risk', cat:'Onboarding Retention', type:'mcq',
+        q:'How do you manage attrition risk during the critical first 90 days for new hires?',
+        opts:[
+          {t:'30-60-90 day check-ins with structured questions, manager touchpoints, and early-warning flags',s:4},
+          {t:'A structured onboarding programme exists but doesn\'t specifically target retention risk',s:3},
+          {t:'An induction week exists but no formal check-ins afterwards',s:2},
+          {t:'New hires are largely left to find their footing after week one',s:0},
+        ],
+        insight:'20% of new hire turnover happens before day 45. Structured 30-60-90 check-ins predict 6-month retention with 74% accuracy — at near-zero cost to implement.',
+        bench:'📊 Orgs with structured onboarding retain 82% of new hires past 12 months vs 52% without',
+      },
+      { area:'External Benchmarking', cat:'Market Context', type:'mcq',
+        q:'Do you benchmark your attrition rate against industry peers?',
+        opts:[
+          {t:'Yes — we participate in benchmarking surveys and compare against sector peers quarterly',s:4},
+          {t:'We use publicly available data occasionally, not systematically',s:3},
+          {t:'We know we should but haven\'t set this up yet',s:2},
+          {t:'We don\'t benchmark against external data',s:0},
+        ],
+        insight:'Without external benchmarks you can\'t distinguish between a "you" problem and an industry-wide trend — which leads to unnecessary spend or dangerous complacency.',
+        bench:'📊 Companies that benchmark attrition are 3× more likely to take targeted action within 90 days',
+      },
+      { area:'Insight-to-Action Speed', cat:'Action Culture', type:'scale',
+        scaleMin:'Rarely or very slowly', scaleMax:'Structured response within 2 weeks',
+        q:'When attrition data reveals a clear trend, how quickly does your organisation respond?',
+        insight:'Data without a defined response protocol is just noise. Top-quartile HR orgs have pre-defined attrition spike protocols that reduce the lag from months to days.',
+        bench:'📊 Insight-to-action: bottom quartile = 73 days, top quartile = 11 days',
+      },
+    ],
+  },
+  {
+    id:'engagement', name:'Engagement & Culture', icon:'❤️', color:'#e65100',
+    desc:'Measure how motivated your people are and whether culture drives performance.',
+    tags:['Pulse Surveys','Action Loop','Culture Health'],
+    qs:[
+      { area:'Survey Frequency', cat:'Listening Cadence', type:'mcq',
+        q:'How often does your organisation formally survey employee engagement?',
+        opts:[
+          {t:'Continuous or bi-monthly pulse surveys plus a deep-dive annual survey',s:4},
+          {t:'Quarterly pulses with structured action follow-up',s:3},
+          {t:'Annual engagement survey only',s:2},
+          {t:'Ad hoc surveys or never',s:0},
+        ],
+        insight:'Annual surveys create an 11-month blind spot. Companies with quarterly pulses detect disengagement 4× faster and complete 22% more action plans.',
+        bench:'📊 Gallup 2024: Engaged employees are 23% more profitable and 18% more productive',
+      },
+      { area:'Engagement Baseline', cat:'Current Reality', type:'scale',
+        scaleMin:'Under 20% genuinely engaged', scaleMax:'Over 70% genuinely engaged',
+        q:'What proportion of your employees are genuinely engaged right now — motivated and emotionally invested?',
+        insight:'Global engagement average: 23% (Gallup 2024). Top orgs reach 60–70%. Each 5-point improvement correlates with 3% lower attrition and 2% higher revenue.',
+        bench:'📊 Global: 23% engaged | Top quartile: 65%+ | Below 35% = high attrition risk',
+      },
+      { area:'Post-Survey Action', cat:'Closed Loop', type:'mcq',
+        q:'After running an engagement survey, what typically happens with the results?',
+        opts:[
+          {t:'Results cascade to managers with team-level data; action plans tracked at leadership level with clear accountability',s:4},
+          {t:'HR presents themes to leadership; some teams create action plans informally',s:3},
+          {t:'A company-wide summary is shared; action is left entirely to individual managers',s:2},
+          {t:'Results are rarely communicated widely or acted upon systematically',s:0},
+        ],
+        insight:'"Survey and do nothing" is the fastest way to destroy trust. 74% of employees who see no post-survey action disengage further.',
+        bench:'📊 Closed-loop survey orgs have 31% higher response rates and 2.3× higher employee trust',
+      },
+      { area:'Manager Accountability', cat:'Manager Ownership', type:'mcq',
+        q:'Do managers receive their own team engagement scores — and are they accountable for improving them?',
+        opts:[
+          {t:'Yes — scores shared directly with managers, included in performance reviews, with coaching provided',s:4},
+          {t:'Scores shared but no formal accountability built in',s:3},
+          {t:'Engagement scores are only visible to HR',s:2},
+          {t:'We don\'t segment engagement results by team or manager',s:0},
+        ],
+        insight:'Manager behaviour explains 70% of variance in team engagement. Sharing team scores with managers and linking them to performance is the most direct single lever.',
+        bench:'📊 Orgs where managers own their engagement scores see 2.1× faster improvement',
+      },
+      { area:'Culture Measurement', cat:'Culture Health', type:'mcq',
+        q:'How do you measure whether your company values are actually lived day-to-day?',
+        opts:[
+          {t:'Values embedded in performance framework and 360° feedback; measured behaviourally',s:4},
+          {t:'Culture-specific questions included in our engagement survey',s:3},
+          {t:'Culture is discussed qualitatively in all-hands meetings',s:2},
+          {t:'We assume culture health from overall engagement scores',s:0},
+        ],
+        insight:'There is typically a 38-point gap between leadership\'s perception of culture health and frontline reality. Measuring culture behaviourally closes that gap.',
+        bench:'📊 64% of 2024 resignations cited cultural misalignment as a contributing factor',
+      },
+      { area:'Burnout Monitoring', cat:'Wellbeing Risk', type:'mcq',
+        q:'How do you monitor and respond to burnout risk across your teams?',
+        opts:[
+          {t:'Burnout tracked via pulse surveys; managers receive team-level alerts and are trained to respond',s:4},
+          {t:'Wellbeing surveys run periodically; outcomes shared with HR and some managers',s:3},
+          {t:'EAP and wellbeing resources exist but burnout isn\'t systematically measured',s:2},
+          {t:'We don\'t formally monitor burnout risk',s:0},
+        ],
+        insight:'Burnout drives 40% of job-switching decisions. Manager behaviour accounts for 50% of variance in team burnout outcomes.',
+        bench:'📊 Orgs measuring manager wellbeing impact see 2× better EAP utilisation and 33% lower sick leave',
+      },
+      { area:'Data Segmentation', cat:'Engagement Depth', type:'mcq',
+        q:'Can you see engagement scores broken down by department, level, tenure, and demographic group?',
+        opts:[
+          {t:'Yes — we slice engagement data across all these dimensions in near real time',s:4},
+          {t:'Some segmentation possible (e.g. department) but not all dimensions',s:3},
+          {t:'We see overall company-level scores only',s:2},
+          {t:'We can\'t segment our engagement data',s:0},
+        ],
+        insight:'Company-average scores hide critical outliers. 78% of engagement drops that led to attrition spikes were invisible at company-average level.',
+        bench:'📊 Orgs with segmented engagement data identify disengagement 4× faster',
+      },
+      { area:'Recognition Culture', cat:'Employee Recognition', type:'mcq',
+        q:'How does your organisation recognise and reward contributions beyond pay?',
+        opts:[
+          {t:'Structured, frequent recognition programme — peer-to-peer, manager-led, company-wide — with participation tracked',s:4},
+          {t:'Ad hoc recognition from managers; some structured programmes exist',s:3},
+          {t:'Annual awards or end-of-year recognition only',s:2},
+          {t:'Recognition is informal and highly inconsistent',s:0},
+        ],
+        insight:'69% of employees say they\'d work harder if they felt better appreciated. Recognition is the highest-ROI engagement lever with the lowest cost per impact point.',
+        bench:'📊 Structured recognition programmes reduce voluntary turnover by 31%',
+      },
+      { area:'eNPS Tracking', cat:'Workforce Health Score', type:'mcq',
+        q:'Do you track your Employee Net Promoter Score (eNPS) and use it in executive reporting?',
+        opts:[
+          {t:'Yes — eNPS tracked quarterly, benchmarked against sector, and presented at board level',s:4},
+          {t:'Tracked but not consistently or not shared widely',s:3},
+          {t:'We know what eNPS is but haven\'t formally implemented it',s:2},
+          {t:'We don\'t track eNPS',s:0},
+        ],
+        insight:'eNPS is the single-number executive summary of workforce health. Companies with negative eNPS experience 2.5× higher attrition than those with eNPS above +30.',
+        bench:'📊 Average eNPS: +22 | High-performing orgs: +50 to +80',
+      },
+      { area:'Psychological Safety', cat:'Feedback Culture', type:'scale',
+        scaleMin:'Not at all — consequences feared', scaleMax:'Actively encouraged and genuinely safe',
+        q:'How comfortable do employees feel giving honest upward feedback to their managers?',
+        insight:'Psychological safety is the #1 predictor of team performance (Google Project Aristotle). Without it, engagement surveys underreport real problems by 1.8 points on a 10-point scale.',
+        bench:'📊 Only 26% of employees feel "very safe" giving honest feedback to their direct manager',
+      },
+    ],
+  },
+  {
+    id:'diversity', name:'Diversity & Inclusion', icon:'🌈', color:'#6a1b9a',
+    desc:'Is your workplace truly equitable and inclusive for everyone in it?',
+    tags:['Pay Equity','Representation','Inclusion Sentiment'],
+    qs:[
+      { area:'Demographic Data', cat:'Data Foundation', type:'mcq',
+        q:'What workforce demographic data do you currently collect and track?',
+        opts:[
+          {t:'Detailed data on gender, ethnicity, age, disability, and other characteristics — updated continuously and segmented by level',s:4},
+          {t:'Gender and age data; partial data on other characteristics',s:3},
+          {t:'Headline diversity metrics reported once a year',s:2},
+          {t:'Minimal or no demographic data collected',s:0},
+        ],
+        insight:'You can\'t improve what you can\'t see. Granular, level-by-level demographic data is the non-negotiable foundation of an effective D&I strategy.',
+        bench:'📊 McKinsey: Top diversity quartile companies are 39% more likely to outperform financially',
+      },
+      { area:'Pay Equity Analysis', cat:'Compensation Equity', type:'mcq',
+        q:'Have you conducted a pay equity analysis in the last 12 months?',
+        opts:[
+          {t:'Rigorous controlled analysis adjusting for role, level, tenure, and performance — with a formal remediation plan',s:4},
+          {t:'Basic analysis comparing average pay by gender or ethnicity without statistical controls',s:3},
+          {t:'Discussed internally but not formally conducted',s:2},
+          {t:'No formal pay equity analysis has been done',s:0},
+        ],
+        insight:'Unexplained pay gaps persist in 61% of organisations even after controlling for role and experience. Only a controlled analysis reveals true inequity.',
+        bench:'📊 EU Pay Transparency Directive (2026): all 100+ employee companies must report and remedy pay gaps',
+      },
+      { area:'Inclusion Measurement', cat:'Belonging & Sentiment', type:'mcq',
+        q:'How do you measure whether employees genuinely feel they belong and are included?',
+        opts:[
+          {t:'Dedicated inclusion sentiment survey with demographic-segmented results; tracked over time with targets',s:4},
+          {t:'A few inclusion questions embedded in our main engagement survey',s:3},
+          {t:'Qualitative feedback from focus groups or ERG leads',s:2},
+          {t:'We don\'t formally measure inclusion sentiment',s:0},
+        ],
+        insight:'Headcount diversity and inclusion are two different things. An org can have good representation but poor belonging — especially for senior minority groups.',
+        bench:'📊 Average inclusion sentiment gap between majority and minority groups in unmeasured orgs: 1.7 points/10',
+      },
+      { area:'Psychological Safety', cat:'Belonging', type:'scale',
+        scaleMin:'Low — fear of judgement is common', scaleMax:'High — all groups feel genuinely safe',
+        q:'How would you rate the degree to which all employees feel safe to speak up, challenge, and be themselves?',
+        insight:'Psychological safety is the #1 predictor of high-performing teams (Google Project Aristotle). Safety scores often diverge significantly by demographic group.',
+        bench:'📊 Teams with high psychological safety are 27% less likely to leave and 17% more productive',
+      },
+      { area:'Hiring & Promotion Equity', cat:'Process Fairness', type:'mcq',
+        q:'How actively do you reduce bias in hiring and promotion decisions?',
+        opts:[
+          {t:'Structured interviews, blind screening, diverse panels, and outcome tracking by demographic group',s:4},
+          {t:'Structured interviews and diverse panels; outcomes not tracked by demographic group',s:3},
+          {t:'Unconscious bias training exists; some process guidelines in place',s:2},
+          {t:'We rely on awareness and good intentions',s:0},
+        ],
+        insight:'Tracking hiring and promotion outcomes by group reveals where bias enters. Without this data, well-intentioned processes still perpetuate inequality — invisibly.',
+        bench:'📊 Structured interviews reduce bias-driven decisions by 26% vs unstructured approaches',
+      },
+      { area:'Leadership Representation', cat:'Pipeline', type:'mcq',
+        q:'How does your leadership team\'s diversity compare to your overall workforce — and do you track it by level?',
+        opts:[
+          {t:'We track representation at every level and have quarterly-reviewed targets for senior leadership',s:4},
+          {t:'We know the gap exists and have informal targets but don\'t rigorously track progress',s:3},
+          {t:'We\'ve acknowledged the imbalance but have no formal targets',s:2},
+          {t:'We don\'t currently track representation by level',s:0},
+        ],
+        insight:'The "broken rung" — underrepresented groups dropping off at the first step to management — accounts for 50% of the leadership representation gap.',
+        bench:'📊 For every 100 men promoted to manager, only 87 women and 71 women of colour are promoted',
+      },
+      { area:'Differential Attrition', cat:'Equity in Retention', type:'mcq',
+        q:'Do you know whether underrepresented groups experience higher attrition than the majority?',
+        opts:[
+          {t:'Yes — we track and monitor attrition by demographic group and actively address disparities',s:4},
+          {t:'We\'re aware differences may exist but don\'t formally track them',s:3},
+          {t:'We\'ve heard anecdotal evidence but lack data to quantify the gap',s:2},
+          {t:'We don\'t segment attrition data by demographic group',s:0},
+        ],
+        insight:'In unmonitored orgs, attrition for underrepresented groups is 1.5× higher than for the majority — and leadership underestimates this gap by an average of 42%.',
+        bench:'📊 Minority group attrition costs organisations billions annually and is largely invisible without segmented data',
+      },
+      { area:'ERG Effectiveness', cat:'Networks & Support', type:'mcq',
+        q:'How effective are your Employee Resource Groups or diversity networks?',
+        opts:[
+          {t:'Well-resourced ERGs with executive sponsors, dedicated budget, and measurable impact on retention and inclusion',s:4},
+          {t:'Active ERGs with leadership support but limited budget and little formal measurement',s:3},
+          {t:'ERGs exist but run on volunteer goodwill with minimal institutional support',s:2},
+          {t:'No formal ERGs or diversity networks exist',s:0},
+        ],
+        insight:'ERGs with executive sponsors and dedicated budget have 2.3× higher impact on minority group retention than those run solely by employee volunteers.',
+        bench:'📊 Effective ERG programmes report 24% higher inclusion scores for participating employees',
+      },
+      { area:'D&I Reporting', cat:'Board Accountability', type:'mcq',
+        q:'How do you report D&I progress to leadership and the board?',
+        opts:[
+          {t:'Real-time dashboards with 10+ D&I metrics; quarterly board reporting with targets and trend analysis',s:4},
+          {t:'Annual D&I report formally presented to leadership',s:3},
+          {t:'D&I mentioned in all-hands meetings but not formally tracked or reported',s:2},
+          {t:'No formal D&I reporting cadence',s:0},
+        ],
+        insight:'Board-level D&I accountability with specific metrics and targets is the strongest predictor of meaningful diversity improvement over 3 years.',
+        bench:'📊 Orgs with board-level D&I accountability achieve 34% greater representation improvement over 5 years',
+      },
+      { area:'Allyship Programme', cat:'Culture of Inclusion', type:'scale',
+        scaleMin:'Not at all', scaleMax:'Structured, ongoing programme',
+        q:'How actively does your organisation build allyship capability in its majority groups?',
+        insight:'Active allyship training moves inclusion sentiment scores by an average of +1.4 points in 6 months. It shifts inclusion from an HR programme to a shared team responsibility.',
+        bench:'📊 Teams with trained allies show 31% higher inclusion sentiment than those without allyship support',
+      },
+    ],
+  },
+  {
+    id:'analytics', name:'HR Data & Analytics', icon:'📊', color:'#1565c0',
+    desc:'How data-driven is your HR function? Assess your analytics maturity.',
+    tags:['Data Systems','Predictive Models','Data Literacy'],
+    qs:[
+      { area:'Data Infrastructure', cat:'Systems & Access', type:'mcq',
+        q:'How is your people data stored and accessed today?',
+        opts:[
+          {t:'Integrated HRIS with real-time dashboards; APIs connect payroll, ATS, and LMS; accessible to HR and leaders',s:4},
+          {t:'Single HRIS but manual exports required; limited manager dashboard access',s:3},
+          {t:'Multiple disconnected systems requiring regular manual reconciliation',s:2},
+          {t:'Primarily spreadsheets with no central system of record',s:0},
+        ],
+        insight:'Data fragmentation costs HR teams 5.8 hours/week in manual work — roughly $28,000/year per HR professional in lost strategic capacity.',
+        bench:'📊 68% of HR teams still rely on manual spreadsheets for at least one critical people metric',
+      },
+      { area:'Analytics Maturity Level', cat:'Analytics Type', type:'mcq',
+        q:'What level of analytics does your HR team currently produce?',
+        opts:[
+          {t:'Predictive and prescriptive — what will happen and what should we do about it',s:4},
+          {t:'Diagnostic — explaining why something happened',s:3},
+          {t:'Descriptive — reporting on what happened (headcount, turnover rates, diversity stats)',s:2},
+          {t:'Basic operational reporting only (e.g. headcount by department)',s:0},
+        ],
+        insight:'Most HR teams operate at Level 1–2 (descriptive). The value step-change comes at Level 3+ where analytics shifts from "what happened" to "what to do next."',
+        bench:'📊 Only 9% of HR teams operate at predictive analytics maturity (Gartner 2024)',
+      },
+      { area:'Team Data Literacy', cat:'Capability', type:'scale',
+        scaleMin:'Very uncomfortable — low confidence', scaleMax:'Highly capable across the team',
+        q:'How comfortable is your overall HR team with data, analytics interpretation, and presenting data narratives to leadership?',
+        insight:'HR data literacy is the #1 capability gap cited by CHROs. Data literacy training improves decision speed and leadership confidence by 34% within 6 months.',
+        bench:'📊 73% of CHROs say "lack of analytics skills" is their biggest HR transformation barrier (Mercer 2024)',
+      },
+      { area:'Business Influence', cat:'Strategic Impact', type:'mcq',
+        q:'How does HR analytics currently influence decisions at leadership level?',
+        opts:[
+          {t:'People data is a standing agenda item in board and leadership meetings — actively driving strategic decisions',s:4},
+          {t:'HR presents people data to leadership when requested or for specific business cases',s:3},
+          {t:'HR metrics appear occasionally in business reviews but rarely drive decisions',s:2},
+          {t:'People data rarely features in business conversations',s:0},
+        ],
+        insight:'Organisations where HR data influences executive decisions experience 82% higher EBITDA performance. The goal isn\'t to produce analytics — it\'s to get data in the room where decisions happen.',
+        bench:'📊 High-performing companies are 5.4× more likely to use people analytics for business decisions',
+      },
+      { area:'Initiative ROI Tracking', cat:'Measurement', type:'mcq',
+        q:'How do you measure the ROI of your HR initiatives (e.g. wellbeing programmes, L&D, pay reviews)?',
+        opts:[
+          {t:'Pre-defined KPIs set before each initiative; results tracked against baseline and reported quarterly',s:4},
+          {t:'Some outcomes measured post-implementation but baselines aren\'t always set upfront',s:3},
+          {t:'Participant satisfaction collected but business impact not formally measured',s:2},
+          {t:'HR initiatives are rarely measured for outcomes',s:0},
+        ],
+        insight:'Only 28% of HR teams measure initiative ROI. Those that do secure 43% more budget the following cycle. CFOs fund what can be proven.',
+        bench:'📊 Every $1 in evidence-based HR programmes generates $2.90 in productivity return (SHRM 2023)',
+      },
+      { area:'Workforce Planning Horizon', cat:'Planning', type:'mcq',
+        q:'How far ahead can your HR team model future headcount and skills needs?',
+        opts:[
+          {t:'2–3 year scenario modelling using attrition predictions, growth plans, and skills gap forecasting',s:4},
+          {t:'Annual headcount planning tied to business budgets',s:3},
+          {t:'Reactive hiring — we plan when a role becomes vacant',s:2},
+          {t:'No formal workforce planning process',s:0},
+        ],
+        insight:'Strategic workforce planning reduces emergency hiring costs by 41% and improves quality of hire by 23% by shifting the organisation from reactive to anticipatory.',
+        bench:'📊 Only 16% of organisations have workforce planning that looks 2+ years ahead',
+      },
+      { area:'Data Quality Confidence', cat:'Data Foundation', type:'scale',
+        scaleMin:'Low — significant errors and gaps', scaleMax:'High — clean, complete, and trusted',
+        q:'How confident are you in the accuracy and completeness of your core HR data?',
+        insight:'The average HRIS has a 12% error rate in key fields like job grade, manager relationships, and tenure dates — enough to skew all downstream analysis.',
+        bench:'📊 Data quality issues cause HR analytics to be distrusted by business leaders in 54% of organisations',
+      },
+      { area:'Reporting Speed', cat:'Accessibility', type:'mcq',
+        q:'How quickly can you produce a specific HR metric when a business leader asks for it?',
+        opts:[
+          {t:'Instantly — live dashboards available to leaders at any time',s:4},
+          {t:'Within hours — standard reports can be pulled quickly',s:3},
+          {t:'Within days — requires manual extraction and reconciliation',s:2},
+          {t:'It can take weeks to pull accurate HR data on request',s:0},
+        ],
+        insight:'Real-time HR dashboards increase leadership confidence in HR as a strategic partner by 3.2×. Slow data access prevents HR from contributing to urgent decisions.',
+        bench:'📊 68% of CHROs say slow data access prevents them from contributing to urgent business decisions',
+      },
+      { area:'Analytics Capability', cat:'Team & Tooling', type:'mcq',
+        q:'Do you have dedicated HR analytics capability — internal or external?',
+        opts:[
+          {t:'Dedicated people analytics team with data engineering, modelling, and visualisation skills',s:4},
+          {t:'One or two analytically skilled HR people who own the analytics agenda',s:3},
+          {t:'We rely on IT or Finance for HR data analysis',s:2},
+          {t:'No dedicated analytics capability in HR at all',s:0},
+        ],
+        insight:'Having even one dedicated HR analytics specialist increases the likelihood of predictive modelling, ROI measurement, and board-level data usage by 3.4×.',
+        bench:'📊 Median people analytics team size in high-maturity orgs: 4 FTEs per 10,000 employees',
+      },
+      { area:'Data Ethics & Privacy', cat:'Trust & Governance', type:'mcq',
+        q:'How does your organisation manage data ethics and employee privacy in people analytics?',
+        opts:[
+          {t:'Formal data governance framework; GDPR-compliant; employees informed about data use; ethics review process in place',s:4},
+          {t:'GDPR-compliant processes; some communication to employees about data use',s:3},
+          {t:'Legal requirements met but not proactively communicated to employees',s:2},
+          {t:'Data ethics and privacy haven\'t been formally addressed',s:0},
+        ],
+        insight:'61% of employees say they\'d distrust HR analytics if they didn\'t understand how their data was used. Transparency enables better data collection and more honest survey responses.',
+        bench:'📊 Orgs with published people analytics ethics policies have 28% higher employee data consent rates',
+      },
+    ],
+  },
+  {
+    id:'compensation', name:'Compensation & Benefits', icon:'💰', color:'#b71c1c',
+    desc:'Is your total reward strategy competitive, equitable, and genuinely motivating?',
+    tags:['Market Benchmarking','Pay Equity','Benefits ROI'],
+    qs:[
+      { area:'Market Benchmarking', cat:'Pay Competitiveness', type:'mcq',
+        q:'How frequently does your organisation benchmark salaries against the external market?',
+        opts:[
+          {t:'Annual benchmarking via multiple salary surveys; real-time data for critical or hard-to-fill roles',s:4},
+          {t:'Annual salary survey participation; results inform pay review cycles',s:3},
+          {t:'Periodic benchmarking — not every year',s:2},
+          {t:'We rarely or never formally benchmark salaries',s:0},
+        ],
+        insight:'Falling >10% below market is a critical attrition risk, especially for high performers who have the most external options. They leave first — and often quietly.',
+        bench:'📊 34% of resignations in 2024 cited below-market pay as a primary driver',
+      },
+      { area:'Pay Satisfaction', cat:'Employee Perception', type:'scale',
+        scaleMin:'Significant dissatisfaction', scaleMax:'Strong, widespread satisfaction',
+        q:'How satisfied are your employees with their total compensation package right now?',
+        insight:'Leaders rate compensation satisfaction 1.2 points higher than employees on average. Adding pay satisfaction questions to your engagement survey closes this dangerous perception gap.',
+        bench:'📊 45% of employees have never been formally asked how satisfied they are with their pay',
+      },
+      { area:'Pay Review Quality', cat:'Process Fairness', type:'mcq',
+        q:'How structured and equitable is your annual pay review process?',
+        opts:[
+          {t:'Structured process linking pay to performance, market data, and equity analysis; calibrated across all managers',s:4},
+          {t:'Annual merit process with manager input and some cross-manager calibration',s:3},
+          {t:'Annual across-the-board increase with limited performance differentiation',s:2},
+          {t:'Pay reviews are ad hoc and highly inconsistent',s:0},
+        ],
+        insight:'High performers who don\'t receive differentiated pay are 3× more likely to leave within 12 months. A merit process is a retention tool, not just a finance exercise.',
+        bench:'📊 Orgs with performance-differentiated pay have 27% lower attrition among top performers',
+      },
+      { area:'Benefits Relevance', cat:'Total Reward', type:'mcq',
+        q:'How well does your current benefits package meet the diverse needs of your workforce?',
+        opts:[
+          {t:'Flexible benefits platform with personalisation; regularly reviewed against usage data and employee feedback',s:4},
+          {t:'Strong, regularly communicated package with some flexibility in how benefits are used',s:3},
+          {t:'Standard package; satisfaction surveyed periodically',s:2},
+          {t:'Benefits haven\'t been reviewed or updated in over 2 years',s:0},
+        ],
+        insight:'Benefits usage data reveals which offerings actually drive value. Most orgs can replace expensive but underused benefits with cheaper, higher-impact alternatives.',
+        bench:'📊 48% of employees rank benefits as a top 3 factor in their stay-or-leave decision',
+      },
+      { area:'Pay Transparency', cat:'Communication', type:'mcq',
+        q:'How transparent is your organisation about how pay is set and what the salary ranges are?',
+        opts:[
+          {t:'Pay ranges shared with all employees; criteria for progression and pay decisions clearly documented',s:4},
+          {t:'Managers can discuss pay philosophy; ranges available on request',s:3},
+          {t:'Information shared at hiring and promotion but not proactively communicated to the wider workforce',s:2},
+          {t:'Pay is treated as strictly confidential',s:0},
+        ],
+        insight:'Pay transparency reduces unexplained gaps by up to 45% and meaningfully increases trust. The EU Pay Transparency Directive (2026) makes this a legal requirement.',
+        bench:'📊 Transparent pay communication reduces pay-related attrition by 19% (LinkedIn 2024)',
+      },
+      { area:'Total Reward Communication', cat:'Value Visibility', type:'mcq',
+        q:'Do employees fully understand the total value of their compensation package beyond base salary?',
+        opts:[
+          {t:'Total reward statements provided; onboarding includes total reward education; communicated year-round',s:4},
+          {t:'Total reward communicated at key moments (hiring, pay review) but not consistently year-round',s:3},
+          {t:'Information is available if sought but not proactively shared',s:2},
+          {t:'Employees primarily focus on base salary; total reward isn\'t actively communicated',s:0},
+        ],
+        insight:'Employees undervalue their benefits package by 32% on average. Total reward statements increase perceived value without increasing cost.',
+        bench:'📊 Proactive total reward communication increases compensation satisfaction by 19% with the same spend',
+      },
+      { area:'High Performer Pay Strategy', cat:'Talent Retention', type:'mcq',
+        q:'How does your pay strategy specifically address retaining your highest performers?',
+        opts:[
+          {t:'Targeted retention packages, accelerated pay progression, and tailored benefits for high performers',s:4},
+          {t:'Higher merit increases for top performers but no specific retention framework',s:3},
+          {t:'Same pay process for all; performance isn\'t strongly differentiated',s:2},
+          {t:'No specific compensation strategy for high performers',s:0},
+        ],
+        insight:'Losing a top performer costs 400% of their annual salary in replacement and productivity impact. Most pay processes are designed for the average employee — not the exceptional one.',
+        bench:'📊 Top 20% performers who feel underpaid are 6× more likely to actively job-search',
+      },
+      { area:'Benefits ROI Tracking', cat:'Benefits Effectiveness', type:'mcq',
+        q:'Do you track benefits utilisation and measure which benefits are actually valued by employees?',
+        opts:[
+          {t:'Full utilisation tracking per benefit; ROI measured against engagement and attrition outcomes',s:4},
+          {t:'Some utilisation data available; no formal ROI measurement',s:3},
+          {t:'Benefits exist but usage isn\'t tracked',s:2},
+          {t:'No utilisation or ROI tracking for benefits',s:0},
+        ],
+        insight:'The average organisation could reallocate 18% of benefits spend to higher-impact offerings if it tracked usage data. Right now, significant budget likely goes on benefits employees neither use nor value.',
+        bench:'📊 Orgs that track benefits ROI reallocate an average of 18% of spend to higher-impact offerings',
+      },
+      { area:'Pay Equity Process', cat:'Equity & Fairness', type:'mcq',
+        q:'Is there a formal, recurring process to identify and remedy pay equity gaps?',
+        opts:[
+          {t:'Annual controlled pay equity analysis with remediation tracking and internal publication of results',s:4},
+          {t:'Pay equity reviewed periodically but remediation not systematically tracked',s:3},
+          {t:'Pay equity considered during pay reviews but not formally analysed with statistical controls',s:2},
+          {t:'No formal pay equity process',s:0},
+        ],
+        insight:'Pay equity gaps — even unintentional ones — create legal, reputational, and trust risk. Proactive measurement and remediation protects the organisation and improves minority group retention.',
+        bench:'📊 Orgs that fix identified pay gaps see 14% improvement in minority group retention within 6 months',
+      },
+      { area:'Pay Drift Detection', cat:'Real-Time Monitoring', type:'mcq',
+        q:'How quickly do you identify when an individual employee\'s pay has fallen significantly below market?',
+        opts:[
+          {t:'Real-time alerts when pay falls below a defined market percentile; manager and HR automatically notified',s:4},
+          {t:'Identified during the annual pay review cycle',s:3},
+          {t:'Usually identified when the employee raises it — or resigns',s:2},
+          {t:'We don\'t track individual market positioning',s:0},
+        ],
+        insight:'"Compensation drift" — where pay gradually falls below market without anyone noticing — drives 23% of "surprising" resignations from otherwise engaged employees.',
+        bench:'📊 Proactive pay drift detection saves 3.2× the cost of reactive counter-offer situations (Mercer 2024)',
+      },
+    ],
+  },
+  {
+    id:'learning', name:'Learning & Development', icon:'🎓', color:'#1b5e20',
+    desc:'Is your L&D strategy building the skills your organisation needs to compete?',
+    tags:['Skills Gaps','L&D ROI','Internal Mobility'],
+    qs:[
+      { area:'Skills Gap Analysis', cat:'Skills Identification', type:'mcq',
+        q:'How does your organisation identify current skills gaps and future capability needs?',
+        opts:[
+          {t:'Continuous skills mapping tied to business strategy; AI-assisted forecasting of future skills needs',s:4},
+          {t:'Annual skills assessment or performance review process identifies key gaps',s:3},
+          {t:'Managers identify needs informally through 1-on-1s or performance reviews',s:2},
+          {t:'Training needs identified reactively when performance issues arise',s:0},
+        ],
+        insight:'Average skill shelf-life is now 2.5 years (WEF). Reactive skills identification means you\'re always 1–2 years behind the business need.',
+        bench:'📊 94% of employees say they\'d stay longer at a company that actively invests in their development',
+      },
+      { area:'L&D Measurement', cat:'Effectiveness', type:'mcq',
+        q:'How do you measure whether your L&D programmes actually change behaviour or business outcomes?',
+        opts:[
+          {t:'All four Kirkpatrick levels: reaction, learning, behaviour change, and business results',s:4},
+          {t:'Learning outcomes (knowledge gain) and some behaviour change via manager observation',s:3},
+          {t:'Participant satisfaction scores and completion rates only',s:2},
+          {t:'Training attendance and hours logged only',s:0},
+        ],
+        insight:'Stopping at Level 1 (satisfaction) tells you if people enjoyed the training — not if it changed anything. Level 3+ measurement (behaviour change) is where L&D ROI is established.',
+        bench:'📊 Only 8% of organisations measure L&D impact at the business results level (Kirkpatrick Level 4)',
+      },
+      { area:'Internal Mobility', cat:'Career Pathways', type:'scale',
+        scaleMin:'Very little — few internal pathways exist', scaleMax:'Strong, data-driven mobility programme',
+        q:'How well does your L&D offering support career progression and internal movement across the organisation?',
+        insight:'Internal mobility reduces attrition by up to 44%. Employees who move internally within 2 years have 75% higher retention at the 5-year mark.',
+        bench:'📊 Internal hire cost: 18% of salary | External hire: 150% of salary',
+      },
+      { area:'Learning Personalisation', cat:'Individual Development', type:'mcq',
+        q:'How personalised is the learning experience for individual employees?',
+        opts:[
+          {t:'AI-powered personalised learning paths based on role, skills gaps, career goals, and learning preferences',s:4},
+          {t:'Curated role-based or level-based paths; employees choose from a structured menu',s:3},
+          {t:'Open learning library — employees self-serve with some manager guidance',s:2},
+          {t:'One-size-fits-all training with little or no personalisation',s:0},
+        ],
+        insight:'Personalised learning increases completion rates by 58% and knowledge retention by 46% vs generic programmes.',
+        bench:'📊 Personalised L&D delivers 4.2× higher learner engagement than generic curricula',
+      },
+      { area:'Manager Development', cat:'Leadership Capability', type:'mcq',
+        q:'How intentionally do you develop your managers\' people management skills?',
+        opts:[
+          {t:'Structured multi-module people manager programme; 360° feedback; coaching for new and developing managers',s:4},
+          {t:'Manager induction training exists; some ongoing development available',s:3},
+          {t:'Generic leadership workshops available but attendance is inconsistent',s:2},
+          {t:'Managers are expected to develop themselves',s:0},
+        ],
+        insight:'New managers without structured training take 6–12 months longer to become effective. During that period, their teams show significantly worse engagement and higher attrition.',
+        bench:'📊 Structured manager development reduces first-year team attrition by 28%',
+      },
+      { area:'Knowledge Management', cat:'Institutional Knowledge', type:'mcq',
+        q:'How well does your organisation protect against institutional knowledge loss when key people leave?',
+        opts:[
+          {t:'Structured knowledge management system; succession plans for key roles; mentoring and shadowing programmes',s:4},
+          {t:'Succession planning exists for senior roles; some process documentation',s:3},
+          {t:'Knowledge transfer happens informally when someone announces they\'re leaving',s:2},
+          {t:'Knowledge loss is a significant, unaddressed problem',s:0},
+        ],
+        insight:'Each departing employee carries ~42 days of re-learnable knowledge plus irreplaceable tacit knowledge about context, relationships, and institutional history.',
+        bench:'📊 Orgs with structured knowledge management recover from key departures 60% faster',
+      },
+      { area:'Learning Culture', cat:'Cultural Foundation', type:'scale',
+        scaleMin:'Learning is seen as a chore or box-tick', scaleMax:'Learning is genuinely in the DNA',
+        q:'How strong is your learning culture — do employees proactively develop themselves and celebrate growth?',
+        insight:'A strong learning culture is the compound interest of people development. Organisations with it are 92% more likely to innovate and 52% more productive.',
+        bench:'📊 Employees in strong learning cultures are 2.3× more likely to stay 3+ years',
+      },
+      { area:'Skills Inventory', cat:'Skills Data', type:'mcq',
+        q:'Do you have a live, accurate picture of the skills that currently exist across your workforce?',
+        opts:[
+          {t:'Dynamic skills inventory updated via assessments, project tracking, and learning completions',s:4},
+          {t:'Skills data captured in performance reviews and updated annually',s:3},
+          {t:'Skills information exists in job descriptions and CVs but isn\'t centrally tracked',s:2},
+          {t:'No formal skills inventory exists',s:0},
+        ],
+        insight:'Without a skills inventory, you\'re hiring externally for capabilities that may already exist internally — paying 8× more per skill acquired.',
+        bench:'📊 Orgs with live skills inventories fill 32% more roles internally than those without',
+      },
+      { area:'L&D Budget Justification', cat:'Investment Case', type:'mcq',
+        q:'How is your L&D budget allocated, and how is its impact justified to leadership and finance?',
+        opts:[
+          {t:'Budget tied to strategic skill priorities; ROI reported to leadership; adjusted based on outcome data',s:4},
+          {t:'Budget allocated by function or headcount; some rationale provided for priority areas',s:3},
+          {t:'Budget largely consistent year-on-year with incremental changes',s:2},
+          {t:'L&D budget is among the first to be cut; no formal justification process',s:0},
+        ],
+        insight:'L&D budgets disconnected from outcomes are disproportionately cut in downturns. ROI measurement protects and grows the budget.',
+        bench:'📊 Orgs that report L&D ROI to the CFO see 2.7× higher budget growth over 3 years',
+      },
+      { area:'L&D Benchmarking', cat:'Investment Comparison', type:'mcq',
+        q:'How does your L&D investment per employee compare to your industry?',
+        opts:[
+          {t:'We actively benchmark L&D spend and are at or above the upper quartile for our sector',s:4},
+          {t:'We\'re aware of benchmarks and aim to be at market rate',s:3},
+          {t:'We don\'t formally benchmark our L&D investment per employee',s:2},
+          {t:'We suspect we\'re below market but lack data to confirm',s:0},
+        ],
+        insight:'Average global L&D spend: $1,252/employee (ATD 2024). Being >20% below sector average correlates with 15% higher attrition — a cost far exceeding the investment gap.',
+        bench:'📊 Average L&D investment: $1,252/employee globally | High-growth orgs: $2,400+',
+      },
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════════
+//  RECOMMENDATION ENGINE
+// ═══════════════════════════════════════════════
+const RECS = {
+  'Exit Process':{icon:'🚪',title:'Build a Structured Exit Intelligence System',text:'Without systematic exit data, every departure is a missed learning opportunity. Move from informal chats to a repeatable, analysable process.',steps:['Design a 10–12 question exit template covering manager quality, career growth, culture fit, and workload','Train HR to conduct structured exit interviews within 2 weeks of every resignation','Enter responses into a tracking tool and review aggregated themes every quarter with leadership'],impact:'Structured exit analysis reduces repeat attrition drivers by 23% within 12 months'},
+  'Attrition Measurement':{icon:'📉',title:'Segment Your Attrition Data to Find the Real Story',text:'A single company-wide number hides the problem. Segmentation reveals which managers, teams, and tenure bands are driving turnover — and where to focus.',steps:['Calculate attrition by department, manager, and three tenure bands: 0–1yr, 1–3yr, 3yr+','Set attrition rate targets per department with monthly leadership review','Make attrition a standing agenda item in board and leadership meetings'],impact:'Segmented attrition analysis identifies root causes 4× faster than company-level data'},
+  'Root Cause Clarity':{icon:'🔍',title:'Build Evidence-Based Root Cause Understanding',text:'Guessing at attrition drivers leads to expensive, wrong interventions. Real understanding requires data from multiple sources — not instinct.',steps:['Add a forced-ranking question to exit interviews: "Rank your top 3 reasons for leaving"','Cross-reference reasons with manager, department, tenure, and pay positioning data','Run annual "stay interviews" with your top 20% performers to understand what would make them leave'],impact:'Targeting the real top 3 drivers reduces attrition spend per retained employee by 41%'},
+  'Financial Quantification':{icon:'💰',title:'Quantify the Cost of Attrition to Unlock Budget',text:'Until HR speaks the language of financial ROI, it will always lose budget battles. Quantifying attrition cost fundamentally changes the conversation.',steps:['Calculate cost per departure: recruitment + onboarding + 6-month productivity ramp + knowledge loss estimate','Multiply by annual departure count to get your total annual attrition cost','Present this figure to the CFO alongside your proposed retention investment and expected ROI'],impact:'HR teams that quantify attrition cost secure 2.4× more retention investment'},
+  'Predictive Capability':{icon:'🔮',title:'Build Your First Attrition Prediction Model',text:'Even a simple model dramatically outperforms gut feel. Start with the data you already have — you don\'t need AI to start.',steps:['Identify your highest-risk combination: 1–2yr tenure + low performance rating + no promotion in 18 months','Flag anyone matching 2+ risk factors in your HRIS and create a "watch list"','Build a manager dashboard showing team risk indicators, reviewed weekly in 1-on-1s'],impact:'Basic models identify 60% of future departures 60+ days in advance'},
+  'Manager Readiness':{icon:'🧑‍💼',title:'Equip Managers to Own Retention',text:'Managers are your frontline retention tool. Without training and data, they manage reactively — and expensively.',steps:['Run a 2-hour "retention conversation" workshop for all people managers','Share team-level engagement and flight-risk data with each manager quarterly','Create a simple guide: how to have retention conversations about career, recognition, and wellbeing'],impact:'Trained, data-equipped managers reduce team attrition by 28%'},
+  'Intervention Speed':{icon:'⚡',title:'Create a Rapid Retention Response Protocol',text:'The difference between a retained employee and a resignation is often simply how fast a meaningful conversation happens.',steps:['Define flight-risk triggers (e.g. low engagement + no pay increase in 18 months + manager relationship flag)','Create a 48-hour response protocol: manager briefed, HR conversation scheduled, options explored','Track outcomes: what % of flagged employees who received intervention stayed vs those who didn\'t?'],impact:'60% of flight risks who receive a meaningful conversation within 2 weeks stay 12+ months more'},
+  'New Hire Risk':{icon:'👋',title:'Launch a 30-60-90 Day Retention Programme',text:'20% of new hire turnover happens before day 45. A structured early check-in process pays for itself many times over.',steps:['Design 3 short surveys: Day 30 (onboarding), Day 60 (role clarity), Day 90 (engagement and career fit)','Flag any score below 3/5 for immediate HR and manager follow-up within 5 business days','Track 12-month retention by cohort vs your pre-programme baseline'],impact:'Structured 30-60-90 programmes improve 12-month new hire retention from 52% to 82%'},
+  'External Benchmarking':{icon:'📏',title:'Establish External Attrition Benchmarking',text:'Context is everything. Without external benchmarks, you can\'t distinguish a company problem from an industry-wide trend.',steps:['Join one industry benchmarking survey (Mercer, WTW, or sector-specific)','Compare attrition by role family against sector peers quarterly','Use benchmark data in leadership conversations to contextualise performance and set achievable targets'],impact:'Benchmarked attrition targets are achieved 28% more often than internally set ones'},
+  'Insight-to-Action Speed':{icon:'🚀',title:'Define Attrition Response SLAs',text:'Data without a response protocol is just noise. Formalising action triggers turns insight into impact before it\'s too late.',steps:['Define your attrition spike threshold (e.g. >15% in any team in a rolling quarter)','Document the response playbook: who is notified, what investigation occurs, what actions are available','Set a target: from insight identification to first action in 14 days or fewer — track and report this'],impact:'Orgs with defined response protocols act on attrition signals 6× faster'},
+  'Survey Frequency':{icon:'📡',title:'Move to Higher-Frequency Listening',text:'Annual surveys create 11 months of blind spots. Higher frequency gives you the data to act before disengagement becomes attrition.',steps:['Launch a 5-question monthly pulse (eNPS + 4 rotating engagement questions)','Set automated alerts when any department score drops >0.5 points month-on-month','Reserve your annual survey for deeper diagnostic questions that need more context'],impact:'Quarterly pulse users detect engagement drops 4× faster and complete 22% more action plans'},
+  'Engagement Baseline':{icon:'❤️',title:'Establish Your True Engagement Baseline',text:'Estimating without data leads to dangerous over-confidence. A validated baseline is essential for tracking real improvement.',steps:['Run an engagement survey using a validated scale (Gallup Q12 or Utrecht Work Engagement Scale)','Segment results immediately by department, manager, tenure, and demographic group','Set a public 12-month improvement target and revisit quarterly — transparency drives accountability'],impact:'Every 5-point engagement improvement correlates with 3% lower attrition and 2% higher revenue'},
+  'Post-Survey Action':{icon:'✅',title:'Build a Closed-Loop Survey Action System',text:'"Survey fatigue" comes from surveys with no action — not from too many surveys. Closing the loop transforms the programme.',steps:['Within 2 weeks of survey close: share results publicly, thank participants, acknowledge key themes honestly','Within 4 weeks: each team lead presents their top 2 action commitments to their own team','Track action completion in a shared dashboard and report at the next survey cycle'],impact:'Closed-loop survey orgs have 31% higher participation rates and 2.3× higher employee trust'},
+  'Manager Accountability':{icon:'🧑‍💼',title:'Make Managers Own Their Team Engagement',text:'When engagement is HR\'s problem, it stays HR\'s problem. When it\'s a manager metric, it moves.',steps:['Share team-level engagement scores directly with each manager after every survey cycle','Add engagement trend as a formal component of manager performance reviews','Provide an engagement action toolkit: conversation guides, recognition prompts, and action templates'],impact:'Orgs where managers own their engagement scores see 2.1× faster improvement'},
+  'Culture Measurement':{icon:'🏛️',title:'Make Culture Tangible and Measurable',text:'Values on the wall aren\'t culture. Embedding culture into your people processes makes it real, improvable, and defensible to leadership.',steps:['Define 2–3 specific behavioural indicators per core value — observable, concrete actions','Add culture questions to your engagement survey: "I see our values lived in day-to-day decisions"','Include culture scores in leadership reviews alongside engagement and attrition data'],impact:'Measured culture values correlate with 16% lower absenteeism and 41% fewer performance issues'},
+  'Burnout Monitoring':{icon:'🌿',title:'Build a Burnout Early Warning System',text:'Burnout is predictable and preventable — but only if you\'re measuring it before crisis point, not after.',steps:['Add 3 burnout indicators to your pulse: workload manageability, emotional exhaustion, sense of recovery','Set team-level thresholds that trigger automatic manager and HR alerts','Train managers on response options: workload review, flexible time, EAP referral — give them choices, not just awareness'],impact:'Proactive burnout monitoring reduces sick leave by 33% and burnout-driven attrition by 40%'},
+  'Data Segmentation':{icon:'🔎',title:'Unlock the Power of Engagement Segmentation',text:'Company-average scores are where important problems go to hide. Segmentation turns data into targeted action.',steps:['Ensure your survey tool captures department, manager, tenure band, and demographic group (with consent)','Create an engagement heat map showing scores by team — identify the bottom quartile for immediate focus','Build a quarterly segmentation report shared with all business leaders, not just HR'],impact:'78% of engagement drops that led to attrition spikes were invisible at company-average level'},
+  'Recognition Culture':{icon:'🌟',title:'Systematise Recognition at Scale',text:'Recognition is the highest-ROI engagement tool with the lowest cost per impact point — but it needs structure to be consistent across the organisation.',steps:['Implement a lightweight peer-to-peer recognition tool (Bonusly, Kudos, or a dedicated Slack channel)','Set a manager expectation: every team member receives specific, meaningful recognition at least fortnightly','Track recognition rates by team and include in your manager effectiveness dashboard'],impact:'Structured recognition programmes reduce voluntary turnover by 31%'},
+  'eNPS Tracking':{icon:'📊',title:'Launch eNPS as Your Workforce Health Score',text:'eNPS is the one number that tells leadership everything about workforce health — and it takes a single question to measure.',steps:['Add "How likely are you to recommend this as a great place to work? (0–10)" to your next survey','Calculate eNPS: % Promoters (9–10) minus % Detractors (0–6)','Track quarterly, benchmark vs sector, set a 12-month target, and share with the executive team monthly'],impact:'Companies with eNPS above +30 experience 2.5× lower attrition than those with negative eNPS'},
+  'Psychological Safety':{icon:'🛡️',title:'Measure and Build a Feedback-Safe Culture',text:'If employees aren\'t safe giving honest feedback, your engagement data is systematically optimistic — real problems stay hidden.',steps:['Add a psychological safety question: "I feel safe to speak up and challenge ideas in my team (1–10)"','Share team-level safety scores with managers as part of their leadership dashboard','Train managers in three safety-building behaviours: actively invite disagreement, reward challenge, never punish honest feedback'],impact:'High psychological safety teams are 27% less likely to leave and 17% more productive'},
+  'Demographic Data':{icon:'🗂️',title:'Build Your D&I Data Foundation',text:'Without demographic data, D&I initiatives are good intentions without evidence. Data makes them strategic and accountable.',steps:['Implement voluntary demographic data collection with clear privacy assurances and transparent explanation of use','Create a data governance policy explaining exactly how demographic data will be stored, accessed, and used','Build a baseline dashboard showing representation at every organisational level — this is your measurable starting point'],impact:'Orgs with robust demographic data improve D&I 2× faster than those without'},
+  'Pay Equity Analysis':{icon:'⚖️',title:'Run a Proper Controlled Pay Equity Analysis',text:'A basic average comparison is not a pay equity analysis. A controlled analysis adjusting for role, level, and experience is the only way to find real inequity.',steps:['Commission or conduct a controlled pay equity analysis adjusting for role, level, experience, and performance','Identify unexplained pay gaps and create a time-bound remediation plan with allocated budget','Publish headline results internally and communicate your commitment to closing gaps — transparency builds trust'],impact:'Proactive pay equity remediation reduces legal risk and improves minority group retention by 14% within 6 months'},
+  'Inclusion Measurement':{icon:'💜',title:'Measure Inclusion — Not Just Representation',text:'Counting heads doesn\'t tell you whether people feel included. Inclusion sentiment surveys do — and they reveal very different stories by group.',steps:['Add 5 inclusion questions to your next survey: belonging, fairness, voice, respect, and growth equity','Segment results by demographic group — the gap between groups reveals where inclusion is failing','Set inclusion sentiment improvement targets with 6-month check-ins and leadership accountability'],impact:'Measuring and acting on inclusion sentiment reduces minority group attrition by 24%'},
+  'Hiring & Promotion Equity':{icon:'🎯',title:'Build Bias-Resistant Hiring and Promotion Processes',text:'Awareness of bias doesn\'t eliminate it. Process design and outcome tracking do.',steps:['Implement structured interview scorecards with pre-defined criteria for all roles — no free-form interviews','Track hiring and promotion outcomes by demographic group quarterly — look for conversion rate disparities','Investigate and address any gap >5% in conversion rates between demographic groups with targeted process changes'],impact:'Structured hiring processes reduce bias-driven decisions by 26%'},
+  'Leadership Representation':{icon:'🏔️',title:'Address the Broken Rung in Your Pipeline',text:'The leadership gap doesn\'t start at the top — it starts at the first step to management. Track it at every level to find where intervention is needed.',steps:['Map representation ratios at each level: individual contributor → team lead → manager → senior manager → director+','Identify where the biggest drop-off occurs for underrepresented groups — this is your broken rung','Set representation targets per level with a 3-year timeline and quarterly progress reviews with board visibility'],impact:'Level-by-level tracking makes the broken rung visible and creates specific, actionable targets'},
+  'Differential Attrition':{icon:'📉',title:'Segment Attrition by Demographic Group',text:'Company-average attrition hides disproportionate exits from minority groups. The first step is making the invisible visible.',steps:['Add demographic fields to your attrition tracking and calculate voluntary exit rates by group','Compare attrition rates — flag any gap >2 percentage points for structured investigation','Correlate differential attrition with exit interview themes, manager quality data, and pay equity results'],impact:'Identifying differential attrition prevents 42% of under-estimated minority group exits'},
+  'ERG Effectiveness':{icon:'🤝',title:'Resource Your ERGs for Real Impact',text:'Volunteer-run ERGs without budget or sponsorship signal that D&I is important — just not important enough to properly invest in.',steps:['Assign an executive sponsor to each ERG with a specific board-level accountability role','Allocate a meaningful annual budget per ERG (benchmark: 0.1% of total payroll)','Define 2–3 measurable objectives per ERG per year: recruitment events, retention touchpoints, inclusion programme delivery'],impact:'Well-resourced ERGs with executive sponsors have 2.3× higher impact on minority group retention'},
+  'D&I Reporting':{icon:'📈',title:'Bring D&I Metrics to the Board Table',text:'What gets measured at board level gets resourced. D&I needs the same reporting rigour as financial performance.',steps:['Create a D&I scorecard with 5–8 metrics: representation by level, pay gap, inclusion sentiment, differential attrition, hiring equity','Present this quarterly alongside financial and operational data — not in a separate HR update','Set 3-year D&I targets and report monthly progress to the executive team'],impact:'Board-level D&I reporting with targets leads to 34% greater representation improvement over 5 years'},
+  'Allyship Programme':{icon:'🌱',title:'Build Allyship Capability at Scale',text:'Inclusion is not achieved by the few — it\'s built by the many. Allyship training shifts responsibility to the whole organisation.',steps:['Run a 3-hour allyship workshop for all people managers — focus on specific, concrete ally behaviours','Measure inclusion sentiment and psychological safety scores before and 6 months after training','Build allyship into manager performance criteria: "creates an environment where all colleagues can thrive"'],impact:'Teams with trained allies show 31% higher inclusion sentiment scores vs those without'},
+  'Data Infrastructure':{icon:'🏗️',title:'Consolidate Your People Data Infrastructure',text:'Fragmented data means fragmented decisions. A consolidated data layer is the foundation everything else depends on.',steps:['Audit your current HR systems: HRIS, payroll, ATS, LMS, engagement tools — map integration gaps','Prioritise connecting your HRIS and engagement tool as the highest-value first integration','Build a single source of truth for 5 core metrics: headcount, attrition, engagement score, time-to-fill, and pay equity index'],impact:'Data consolidation saves HR teams 5.8 hours/week in manual work and enables same-day reporting'},
+  'Analytics Maturity Level':{icon:'📊',title:'Move from Descriptive to Diagnostic Analytics',text:'Reporting what happened is table stakes. Explaining why it happened is where HR earns its strategic seat at the table.',steps:['Pick one key question to diagnose: "Why is attrition higher in team X than team Y?" and build a data-driven analytical response','Present a diagnostic insight — not just data — in your next leadership meeting with a "so what" and recommended action','Build a quarterly diagnostic report covering attrition, engagement, and D&I trends with causation analysis'],impact:'Diagnostic analytics users are 3.2× more likely to be seen as strategic HR partners by leadership'},
+  'Team Data Literacy':{icon:'📚',title:'Build HR Data Literacy Across the Team',text:'An analytics tool is only as powerful as the team using it. Data literacy is the critical capability that unlocks everything else.',steps:['Run a data literacy assessment for your HR team — identify specific gaps (interpretation, visualisation, storytelling)','Invest in a structured training programme: data interpretation, Excel or Tableau basics, and HR data storytelling','Create a monthly "data challenge" — a real HR question your team must answer using available data, then present'],impact:'Data literacy training improves decision speed and leadership confidence by 34% within 6 months'},
+  'Business Influence':{icon:'🎯',title:'Embed HR Data in Business Decision-Making',text:'HR analytics that only live in HR dashboards aren\'t influencing decisions. The goal is getting data into the room where decisions happen.',steps:['Request a standing slot in the next leadership meeting to present 3 people insights with "so what" clearly articulated','Build a one-page monthly "People Intelligence Brief" for every business leader showing their team\'s key metrics','Proactively connect people data to a business outcome the CFO cares about: productivity, NPS, or revenue growth'],impact:'Orgs where HR data influences executive decisions see 82% higher EBITDA performance'},
+  'Initiative ROI Tracking':{icon:'💡',title:'Measure What Matters: HR Initiative ROI',text:'Every HR initiative needs a before, a during, and an after. Without measurement, you can\'t prove value — or learn from failure.',steps:['For your next initiative, define 2–3 specific outcome metrics before you start and document the baseline','Run a 3 and 6-month post-implementation review against your baseline with clear attribution','Build a simple ROI framework: investment cost vs measurable outcome (attrition saved, productivity gained, sick leave reduced)'],impact:'Orgs that measure HR ROI secure 43% more budget in the following cycle'},
+  'Workforce Planning Horizon':{icon:'🗺️',title:'Build a Forward-Looking Workforce Plan',text:'Reactive hiring is expensive and slow. Strategic workforce planning is how HR becomes a true business partner.',steps:['Partner with Finance to model 3 headcount scenarios for the next 18 months: baseline, growth, and downturn','Identify the 5 roles most critical to business growth and model their hiring lead times and replacement costs','Present a workforce plan to leadership with specific recommendations linked to business milestones'],impact:'Strategic workforce planning reduces emergency hiring costs by 41% and improves quality of hire by 23%'},
+  'Data Quality Confidence':{icon:'🔬',title:'Conduct a People Data Quality Audit',text:'Bad data produces bad insights. Before building on your HR data foundation, you need to know what you\'re actually working with.',steps:['Audit your HRIS for 5 critical fields: job grade, manager relationship, location, tenure date, and employment type','Fix the 3 most common error types first — typically manager relationships, job grades, and start dates','Set a data quality SLA: >95% accuracy on critical fields, with a quarterly audit process to maintain it'],impact:'Clean data increases leadership trust in HR analytics from 46% to 79%'},
+  'Reporting Speed':{icon:'⚡',title:'Build Self-Serve HR Reporting',text:'If every data request requires manual extraction, HR becomes a reporting service rather than an insights engine. Self-serve changes the dynamic.',steps:['Identify the 5 metrics most commonly requested by business leaders and build automated dashboards for each','Give managers direct access to their team\'s key metrics: headcount, engagement, attrition, and open roles','Reduce manual reporting SLA from days to under 4 hours as your 90-day target, then towards real-time'],impact:'Self-serve dashboards increase manager data usage by 4.1× and reduce HR reporting time by 60%'},
+  'Analytics Capability':{icon:'🧑‍💻',title:'Build or Buy HR Analytics Capability',text:'You don\'t need a large team — you need the right capability. Even one skilled analyst changes the trajectory of HR\'s strategic influence.',steps:['Model whether to hire, upskill internally, or work with an external analytics partner — compare 3-year costs','If hiring, look for an HR Business Intelligence Analyst: SQL or Python basics + strong storytelling + HR context knowledge','As a minimum, identify one HR person to own the analytics agenda part-time and invest in their development'],impact:'Even one dedicated HR analytics role increases likelihood of predictive modelling by 3.4×'},
+  'Data Ethics & Privacy':{icon:'🔒',title:'Build a People Analytics Ethics Framework',text:'Trust is the foundation of people analytics. Without it, employees opt out and your analytics programme fails before it starts.',steps:['Write a one-page "How we use your data" statement and share it proactively with all employees','Create a data ethics review checklist for any new people analytics project — who has access, how it\'s used, what decisions it informs','Publish your people analytics governance policy on your intranet and reference it in your privacy notice'],impact:'Orgs with published ethics policies have 28% higher employee data consent rates'},
+  'Market Benchmarking':{icon:'📏',title:'Establish Annual Market Pay Benchmarking',text:'Without external data, you\'re flying blind on competitiveness — and likely losing talent to better-paying competitors before you even know there\'s a gap.',steps:['Participate in one industry salary benchmarking survey this year (Mercer, WTW, or sector-specific)','Map your median pay to the market P25, P50, and P75 for each job family','Flag any role family where your median falls below P40 and prioritise in the next pay review cycle'],impact:'Market-aligned pay reduces attrition driven by below-market compensation by 34%'},
+  'Pay Satisfaction':{icon:'😊',title:'Measure Employee Pay Satisfaction Directly',text:'The perception gap between what leaders think employees feel about pay and reality averages 1.2 points. You can\'t close a gap you haven\'t measured.',steps:['Add 2 compensation questions to your next engagement survey: overall pay satisfaction and total reward value','Segment results by level, tenure, and demographic group — gaps will be revealing','Share results with leadership alongside market benchmark data to contextualise satisfaction levels'],impact:'Measuring pay satisfaction reduces pay-related "surprise" resignations by 26%'},
+  'Pay Review Quality':{icon:'⚖️',title:'Redesign Your Pay Review as a Retention Tool',text:'An inconsistent, poorly calibrated pay review does more harm than good — it rewards the loudest, not the best.',steps:['Implement a manager calibration session before pay decisions are communicated — ensure consistency across teams','Add market positioning data to each manager\'s pay review pack so they can see where their team sits vs market','Include an equity check before finalising: review distribution by gender and ethnicity to catch unintentional gaps'],impact:'Calibrated, equity-checked pay reviews reduce top performer attrition by 27%'},
+  'Benefits Relevance':{icon:'🎁',title:'Run a Benefits Relevance Audit',text:'You may be spending significantly on benefits your employees don\'t value — while missing the ones that would actually make a difference.',steps:['Add a benefits satisfaction and usage question to your next survey: "Which benefits do you use? Which do you value most?"','Map actual usage data (where available) against cost per employee for each benefit','Present a reallocation recommendation: sunset the 2 lowest-used benefits and reinvest in higher-impact alternatives'],impact:'Benefits reallocation based on usage data improves satisfaction by 22% without increasing spend'},
+  'Pay Transparency':{icon:'📢',title:'Build Towards Pay Transparency Now',text:'Pay transparency isn\'t just a cultural choice — it\'s becoming a legal requirement. Starting now gives you control over the narrative and the timeline.',steps:['Define pay bands for each job level and document the criteria that determine where someone sits in the band','Share pay bands with managers and train them to have pay conversations with confidence and clarity','Communicate your pay philosophy to all employees: how pay is set, how it moves, and what the ranges are'],impact:'Pay transparency reduces unexplained gaps by 45% and attrition from pay opacity by 19%'},
+  'Total Reward Communication':{icon:'📄',title:'Create Total Reward Statements',text:'Employees who see only their salary feel underpaid — even when their total package is genuinely generous. Show them the full picture.',steps:['Design a total reward statement template showing salary + pension + healthcare + flexibility + L&D + other benefits','Send personalised statements to every employee at least annually — and always during pay review season','Brief managers on how to discuss total reward so the communication is consistent and confident at team level'],impact:'Total reward statements increase perceived compensation value by 32% with zero additional spend'},
+  'High Performer Pay Strategy':{icon:'🏆',title:'Build a High Performer Pay and Retention Strategy',text:'Your best people have the most options. A generic pay process will lose them to competitors who\'ve thought harder about keeping exceptional talent.',steps:['Identify your top 15% performers using objective criteria and add them to a retention watch list with regular check-ins','Review their pay against market P75 — any gap should be addressed proactively before they raise it or resign','Consider targeted retention agreements for your top 5% business-critical employees: equity, accelerated progression, or bespoke benefits'],impact:'Proactive high-performer pay strategy reduces top-talent attrition by 38%'},
+  'Benefits ROI Tracking':{icon:'📊',title:'Track Benefits Utilisation and ROI',text:'You\'re likely spending significant budget on benefits employees don\'t use. Usage data is the only way to know — and to justify the spend.',steps:['Work with your benefits provider to obtain utilisation data for each offering — most providers have this data readily available','Map usage rate against cost per employee for each benefit to identify low-ROI spend immediately','Run a 3-year trend to see which benefits are growing and declining in usage — this is your reallocation roadmap'],impact:'Usage-based benefits optimisation reallocates an average of 18% of spend to higher-impact offerings'},
+  'Pay Equity Process':{icon:'⚖️',title:'Build an Annual Pay Equity Review Process',text:'Pay equity gaps don\'t fix themselves — they compound over time. An annual process ensures you\'re catching and closing them systematically.',steps:['Commission an annual controlled pay equity analysis adjusting for role, level, experience, and performance','For any unexplained gap above 3%, create a time-bound remediation plan with allocated budget and named ownership','Report pay equity progress to the board annually and publish headline results internally to build trust'],impact:'Annual pay equity reviews reduce legal risk and improve minority group retention by 14% within 6 months'},
+  'Pay Drift Detection':{icon:'🚨',title:'Build Real-Time Pay Drift Detection',text:'"Compensation drift" — where pay gradually falls below market without anyone noticing — is a silent attrition driver that shows up as a surprise resignation.',steps:['Set a market positioning alert: flag any employee whose salary falls below P40 for their role and location','Build a quarterly pay drift report for managers showing their team\'s market positioning before it becomes a resignation','Create a mid-cycle pay correction process that doesn\'t require waiting until the annual review to act'],impact:'Proactive pay drift detection reduces "surprise" pay-related resignations by 61%'},
+  'Skills Gap Analysis':{icon:'🗺️',title:'Build a Systematic Skills Gap Process',text:'You can\'t close skills gaps you haven\'t identified. A structured process makes skills strategy proactive rather than perpetually reactive.',steps:['Partner with each business leader to identify the top 5 skills their function will need in 18 months','Map current workforce capability against that future need — the gap is your L&D priority list','Build a rolling skills roadmap that updates annually and feeds directly into your L&D budget allocation decisions'],impact:'Proactive skills planning reduces emergency external hiring by 41% and improves quality of hire by 23%'},
+  'L&D Measurement':{icon:'📐',title:'Move to Kirkpatrick Level 3 Measurement',text:'Satisfaction scores tell you if people enjoyed the training. Behaviour change data tells you if it worked. That\'s the difference between spend and investment.',steps:['Choose one L&D programme and build a Level 3 measurement plan: what behaviours should change, how will you observe them?','Work with line managers to rate observable behaviour change 60 days post-training using a simple 5-point scale','Build the business case for your top 3 programmes using productivity, quality, or retention outcome data (Level 4)'],impact:'Level 3+ measurement increases L&D credibility and drives 2.7× higher budget growth'},
+  'Internal Mobility':{icon:'🔄',title:'Build a Structured Internal Mobility Programme',text:'The talent you need is probably already in your organisation. Internal mobility finds it before employees find an external opportunity instead.',steps:['Create a quarterly internal job marketplace — all vacancies posted internally 2 weeks before external advertisement','Build "career pathway maps" for your 5 highest-volume roles showing what skills and experience lead to advancement','Track internal vs external hiring rate monthly and set a 12-month target to increase internal fill rate by 20%'],impact:'Structured internal mobility programmes reduce attrition by up to 44%'},
+  'Learning Personalisation':{icon:'🎯',title:'Introduce Role-Based Learning Paths',text:'Generic training is both expensive and ineffective. Even modest personalisation dramatically improves completion rates and knowledge retention.',steps:['Define 3–5 core skill requirements per role family and curate specific learning content against each requirement','Give every employee a personalised development plan built from role requirements, performance data, and career goals','Introduce a personal learning budget: direct it towards high-priority skill gaps rather than open, undirected access'],impact:'Role-based learning paths increase completion rates by 58% and knowledge retention by 46%'},
+  'Manager Development':{icon:'👨‍🏫',title:'Build a Structured People Manager Programme',text:'Untrained managers are your biggest hidden talent risk. They drive the single largest share of preventable, expensive attrition.',steps:['Map the 5 core people management competencies: feedback, performance conversations, recognition, coaching, and inclusion','Build or procure a structured 6-module manager programme with practice scenarios and real-world application exercises','Run 360° feedback for all managers twice per year — this is the most powerful, highest-ROI development catalyst available'],impact:'Structured manager development reduces first-year team attrition by 28%'},
+  'Knowledge Management':{icon:'📚',title:'Formalise Knowledge Capture and Transfer',text:'When key people leave, they take years of irreplaceable institutional knowledge. A formal process means the knowledge stays when the person goes.',steps:['Identify your top 20 "knowledge risk" roles — people whose departure would cause the most operational disruption','Build knowledge capture templates for each: key decisions, relationships, processes, and undocumented "things only they know"','Implement a formal 4-week knowledge transfer protocol for all planned departures in high-risk roles'],impact:'Structured knowledge management reduces recovery time from key departures by 60%'},
+  'Learning Culture':{icon:'🌱',title:'Build the Conditions for a Learning Culture',text:'A learning culture isn\'t created by a policy or a learning platform — it\'s created by leaders and managers who model, encourage, and visibly reward development.',steps:['Add "supporting team development" as a formal, weighted metric in manager performance reviews','Implement a monthly "learning spotlight" in team meetings: each person shares one thing they recently learned','Celebrate and visibly recognise employees who complete development programmes — especially non-mandatory ones'],impact:'Strong learning cultures are 92% more likely to innovate and 52% more productive'},
+  'Skills Inventory':{icon:'🗂️',title:'Build a Dynamic Skills Inventory',text:'Without a live skills inventory, you\'re paying to hire externally for skills that may already exist within your own walls.',steps:['Start with a skills survey for your top 3 job families — ask employees to self-rate against a defined, specific skills list','Store skills data centrally in your HRIS and review quarterly rather than relying on outdated annual performance data','Use skills data to inform every internal mobility decision before opening any external requisition'],impact:'Live skills inventories enable orgs to fill 32% more roles internally, saving recruitment cost and improving retention'},
+  'L&D Budget Justification':{icon:'💼',title:'Build an Evidence-Based L&D Business Case',text:'L&D budgets without ROI evidence are the first to be cut in any downturn. Evidence-based investment protects and grows the budget.',steps:['For your top 3 L&D programmes, calculate cost per participant and link to measurable business outcomes (attrition, productivity, quality)','Build a simple L&D ROI dashboard: investment, participation rate, skills improvement, and 6-month attrition for participants vs non-participants','Present your annual L&D ROI report to the CFO alongside Finance, Marketing, and Operations — not just in the HR budget review'],impact:'Orgs that present L&D ROI to the CFO see 2.7× higher budget growth over 3 years'},
+  'L&D Benchmarking':{icon:'📊',title:'Benchmark Your L&D Investment',text:'Not knowing where you stand vs industry peers makes it impossible to know if you\'re under-investing — or investing in the wrong areas entirely.',steps:['Join one industry L&D benchmarking survey (ATD, CIPD, or sector-specific) to get spend-per-employee comparisons','Compare your L&D hours per employee and investment per employee against sector median — flag any gap >20%','Use benchmark data explicitly in budget discussions: "We spend $X vs sector median of $Y — here\'s the retention cost of that gap"'],impact:'Benchmarked L&D investment decisions are 34% more likely to be approved by leadership and finance'},
+};
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let activeDomain = null;
+let currentQ = 0;
+let answers = [];
+let answered = false;
+let completedDomains = {};
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  buildHub();
+  // Check if a domain was pre-selected from the main site
+  const preSelected = sessionStorage.getItem('startDomain');
+  if (preSelected) {
+    sessionStorage.removeItem('startDomain');
+    const idx = DOMAINS.findIndex(d => d.id === preSelected);
+    if (idx !== -1) {
+      setTimeout(() => startDomain(idx), 100);
+      return;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  BUILD HUB
+// ═══════════════════════════════════════════════
+function buildHub() {
+  const grid = document.getElementById('domain-grid');
+  grid.innerHTML = '';
+  DOMAINS.forEach((d, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'dtile';
+    tile.id = 'tile-' + d.id;
+    tile.onclick = () => startDomain(i);
+    tile.innerHTML = `
+      <div class="dtile-done" id="done-${d.id}">✓ Done</div>
+      <div class="dtile-bar" style="background:${d.color}"></div>
+      <span class="dtile-icon">${d.icon}</span>
+      <div class="dtile-name">${d.name}</div>
+      <div class="dtile-desc">${d.desc}</div>
+      <div class="dtile-foot">
+        <div class="dtile-tags">${d.tags.map(t=>`<span class="dtile-tag" style="color:${d.color}">${t}</span>`).join('')}</div>
+        <div class="dtile-arrow">→</div>
+      </div>`;
+    grid.appendChild(tile);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  START DOMAIN
+// ═══════════════════════════════════════════════
+function startDomain(idx) {
+  activeDomain = idx;
+  currentQ = 0;
+  answers = new Array(DOMAINS[idx].qs.length);
+  answered = false;
+  const d = DOMAINS[idx];
+  document.body.style.setProperty('--ac', d.color);
+  document.getElementById('qs-dname').textContent = d.name;
+  document.getElementById('qs-fill').style.background = d.color;
+  document.getElementById('tbback').style.display = 'flex';
+  buildSidebar();
+  show('quiz');
+  renderQ();
+}
+
+// ═══════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════
+function buildSidebar() {
+  const sb = document.getElementById('qsidebar');
+  sb.querySelectorAll('.qs-step').forEach(e => e.remove());
+  const foot = sb.querySelector('.qs-foot');
+  DOMAINS[activeDomain].qs.forEach((q, i) => {
+    const el = document.createElement('div');
+    el.className = 'qs-step';
+    el.id = 'qss-' + i;
+    el.innerHTML = `<div class="qs-num">${i+1}</div><div class="qs-area">${q.area}</div>`;
+    sb.insertBefore(el, foot);
+  });
+  updateSidebar();
+}
+
+function updateSidebar() {
+  const done = answers.filter(a => a !== undefined).length;
+  const pct = Math.round((done / DOMAINS[activeDomain].qs.length) * 100);
+  document.getElementById('qs-fill').style.width = pct + '%';
+  document.getElementById('qs-pct').textContent = pct + '%';
+  document.querySelectorAll('.qs-step').forEach((el, i) => {
+    el.classList.toggle('cur', i === currentQ);
+    el.classList.toggle('done', answers[i] !== undefined && i !== currentQ);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER QUESTION
+// ═══════════════════════════════════════════════
+function renderQ() {
+  answered = false;
+  document.getElementById('btn-next').disabled = true;
+  document.getElementById('qa-insight').classList.remove('on');
+  const d = DOMAINS[activeDomain];
+  const q = d.qs[currentQ];
+  const top = document.getElementById('qa-top');
+  top.textContent = `${d.icon} ${d.name}  ·  ${q.cat}  ·  Q${currentQ+1} of ${d.qs.length}`;
+  top.style.color = d.color;
+  document.getElementById('qa-q').textContent = q.q;
+  document.getElementById('qa-hint').textContent = q.hint || '';
+
+  // Progress dots
+  const dots = document.getElementById('qdots');
+  dots.innerHTML = '';
+  d.qs.forEach((_, i) => {
+    const dot = document.createElement('div');
+    const isDone = answers[i] !== undefined && i < currentQ;
+    dot.className = 'qdot' + (isDone ? ' on' : '') + (i === currentQ ? ' cur' : '');
+    dots.appendChild(dot);
+  });
+
+  const area = document.getElementById('qa-input');
+  area.innerHTML = '';
+  if (q.type === 'mcq') buildMCQ(q, area);
+  else buildScale(q, area);
+
+  // Animate in
+  const block = document.getElementById('qa-block');
+  block.classList.remove('qa-anim');
+  void block.offsetWidth;
+  block.classList.add('qa-anim');
+  updateSidebar();
+}
+
+function buildMCQ(q, area) {
+  const wrap = document.createElement('div');
+  wrap.className = 'opts';
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, i) => {
+    const el = document.createElement('div');
+    el.className = 'opt';
+    el.innerHTML = `<div class="opt-key">${letters[i]}</div><div class="opt-text">${opt.t}</div>`;
+    el.onclick = () => {
+      if (answered) return;
+      answered = true;
+      const maxScore = q.opts[0].s;
+      wrap.querySelectorAll('.opt').forEach((o, oi) => {
+        o.classList.add('lock');
+        if (oi === i) o.classList.add(opt.s === maxScore ? 'best sel' : 'miss');
+        else if (oi === 0 && opt.s !== maxScore) o.classList.add('best');
+      });
+      answers[currentQ] = opt.s;
+      showInsight(q);
+      document.getElementById('btn-next').disabled = false;
+      const pct = Math.round((opt.s / maxScore) * 100);
+      showToast(pct === 100 ? '🏆' : pct >= 50 ? '👍' : '📌',
+                pct === 100 ? 'Best practice! Well done.' : pct >= 50 ? 'Developing area — see insight below' : 'Gap identified — read the insight');
+    };
+    wrap.appendChild(el);
+  });
+  area.appendChild(wrap);
+}
+
+function buildScale(q, area) {
+  const d = DOMAINS[activeDomain];
+  const wrap = document.createElement('div');
+  wrap.className = 'scale-wrap';
+  const btnsDiv = document.createElement('div');
+  btnsDiv.className = 'scale-btns';
+  for (let v = 1; v <= 5; v++) {
+    const btn = document.createElement('button');
+    btn.className = 'sbtn';
+    btn.textContent = v;
+    btn.onclick = () => {
+      if (answered) return;
+      answered = true;
+      btnsDiv.querySelectorAll('.sbtn').forEach(b => { b.classList.remove('on'); b.disabled = true; });
+      btn.classList.add('on');
+      answers[currentQ] = v - 1; // 0–4
+      showInsight(q);
+      document.getElementById('btn-next').disabled = false;
+      showToast(v >= 4 ? '🏆' : v >= 3 ? '👍' : '📌',
+                v >= 4 ? 'Strong performance here!' : v >= 3 ? 'Room to grow — see the insight' : 'This is a key gap — read the insight');
+    };
+    btnsDiv.appendChild(btn);
+  }
+  const ends = document.createElement('div');
+  ends.className = 'scale-ends';
+  ends.innerHTML = `<span>${q.scaleMin}</span><span>${q.scaleMax}</span>`;
+  wrap.appendChild(btnsDiv);
+  wrap.appendChild(ends);
+  area.appendChild(wrap);
+}
+
+function showInsight(q) {
+  document.getElementById('ins-text').textContent = q.insight;
+  document.getElementById('ins-bench').innerHTML = q.bench ? `📈 ${q.bench}` : '';
+  document.getElementById('qa-insight').classList.add('on');
+}
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+function nextQ() {
+  if (!answered) return;
+  const d = DOMAINS[activeDomain];
+  if (currentQ < d.qs.length - 1) {
+    currentQ++;
+    renderQ();
+  } else {
+    showResults();
+  }
+}
+
+function goHub() {
+  show('hub');
+  document.getElementById('tbback').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  RESULTS
+// ═══════════════════════════════════════════════
+function showResults() {
+  // Mark as completed
+  const doneEl = document.getElementById('done-' + DOMAINS[activeDomain].id);
+  if (doneEl) doneEl.style.display = 'block';
+  completedDomains[activeDomain] = true;
+  document.getElementById('tbback').style.display = 'flex';
+
+  const d = DOMAINS[activeDomain];
+  const qs = d.qs;
+  const maxPerQ = qs.map(q => q.type === 'mcq' ? q.opts[0].s : 4);
+  const totalMax = maxPerQ.reduce((s, v) => s + v, 0);
+  const totalScore = answers.reduce((s, v, i) => s + (v || 0), 0);
+  const pct = Math.round((totalScore / totalMax) * 100);
+
+  // Per-area scores
+  const areaScores = qs.map((q, i) => ({
+    area: q.area,
+    pct: Math.round(((answers[i] || 0) / maxPerQ[i]) * 100)
+  }));
+  const sorted = [...areaScores].sort((a, b) => a.pct - b.pct);
+  const gaps = sorted.filter(a => a.pct < 60);
+  const strengths = sorted.filter(a => a.pct >= 75);
+
+  // Maturity level
+  const levels = [
+    { min:0, max:35, label:'Foundation Stage', emoji:'🌱', color:'#c62828' },
+    { min:36, max:60, label:'Developing Stage', emoji:'📈', color:'#e65100' },
+    { min:61, max:80, label:'Advancing Stage',  emoji:'🚀', color: d.color },
+    { min:81, max:100,label:'High Performance', emoji:'🏆', color:'#1b5e20' },
+  ];
+  const lv = levels.find(l => pct >= l.min && pct <= l.max) || levels[0];
+
+  const wrap = document.getElementById('res-wrap');
+  wrap.innerHTML = `
+    <!-- Score hero -->
+    <div class="score-hero">
+      <div class="sh-ring">
+        <svg width="136" height="136" viewBox="0 0 136 136">
+          <circle class="ring-bg" cx="68" cy="68" r="54"/>
+          <circle class="ring-fill" id="ring-fill" cx="68" cy="68" r="54"
+            stroke="${d.color}" stroke-dasharray="339.3" stroke-dashoffset="339.3"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-pct" id="ring-pct" style="color:${d.color}">0%</div>
+          <div class="ring-lbl">Score</div>
+        </div>
+      </div>
+      <div class="sh-body">
+        <div class="sh-dom" style="color:${d.color}">${d.icon} ${d.name}</div>
+        <div class="sh-lvl">${lv.emoji} ${lv.label}</div>
+        <div class="sh-desc">${getLevelDesc(pct, d.id)}</div>
+      </div>
+    </div>
+
+    <!-- Per-area breakdown -->
+    <div class="slabel">Performance by Area</div>
+    <div class="subcards" id="subcards"></div>
+
+    ${gaps.length > 0 ? `
+    <div class="slabel" style="margin-top:28px">🔴 Identified Gaps &amp; Priority Actions</div>
+    <div class="gaps" id="gaplist"></div>` : `
+    <div class="slabel" style="color:#2e7d32;margin-top:28px">✅ No Critical Gaps — Strong Performance Across All Areas</div>`}
+
+    ${strengths.length > 0 ? `
+    <div class="slabel">✅ Your Strengths</div>
+    <div class="strgrid" id="strlist"></div>` : ''}
+
+    <!-- Try other domains -->
+    <div class="more-domains">
+      <div class="more-label">Continue with another domain</div>
+      <div class="more-grid" id="more-grid"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="rescta">
+      <div>
+        <div class="rcta-t">Ready to act on these insights?</div>
+        <div class="rcta-s">Get a full diagnostic report, 90-day roadmap, and expert session for ${d.name}.</div>
+      </div>
+      <div class="rcta-btns">
+        <a href="index.html" class="btn-lt">← Back to PeopleIQ</a>
+        <button class="btn-gh" onclick="goHub()">Try Another Domain</button>
+        <button class="btn-gh" onclick="startDomain(${activeDomain})">↩ Retake This</button>
+      </div>
+    </div>`;
+
+  // Fill area cards
+  const sc = document.getElementById('subcards');
+  areaScores.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'subcard';
+    card.innerHTML = `
+      <div class="sc-lbl">${a.area}</div>
+      <div class="sc-val" style="color:${scoreColor(a.pct)}">${a.pct}%</div>
+      <div class="sc-bar"><div class="sc-fill" style="width:0%;background:${scoreColor(a.pct)}" data-w="${a.pct}"></div></div>
+      <div class="sc-stat">${scoreLabel(a.pct)}</div>`;
+    sc.appendChild(card);
+  });
+
+  // Fill gaps
+  const gl = document.getElementById('gaplist');
+  if (gl) {
+    gaps.slice(0, 5).forEach((g, rank) => {
+      const prio = rank === 0 ? 'Critical — Act Now' : rank === 1 ? 'High Priority' : 'Medium Priority';
+      const pc = rank === 0 ? '#c62828' : rank === 1 ? '#e65100' : '#f9a825';
+      const rec = RECS[g.area] || { icon:'⚠️', title:'Address This Gap', text:'This area scored below benchmark and needs attention.', steps:['Review current practices','Set a measurable 90-day target','Assign clear ownership'], impact:'Addressing gaps typically improves maturity by 15–25 points' };
+      const card = document.createElement('div');
+      card.className = 'gcard';
+      card.innerHTML = `
+        <div class="gico" style="background:color-mix(in srgb,${pc} 10%,white)">${rec.icon}</div>
+        <div class="gbody">
+          <div class="gprio" style="color:${pc}">${prio}  ·  ${g.area}  ·  Score: ${g.pct}%</div>
+          <div class="gtitle">${rec.title}</div>
+          <div class="gtext">${rec.text}</div>
+          <div class="gsteps">
+            ${rec.steps.map((s, i) => `<div class="gstep"><div class="gsn">${i+1}</div>${s}</div>`).join('')}
+          </div>
+          <div class="gimpact" style="color:${d.color}">⚡ ${rec.impact}</div>
+        </div>`;
+      gl.appendChild(card);
+    });
+  }
+
+  // Fill strengths
+  const sl = document.getElementById('strlist');
+  if (sl) {
+    strengths.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'strcard';
+      card.innerHTML = `
+        <div class="str-ic">✅</div>
+        <div>
+          <div class="str-t">${s.area}</div>
+          <div class="str-d">Scoring ${s.pct}% — above the industry benchmark. Keep investing here and consider sharing this practice internally.</div>
+        </div>`;
+      sl.appendChild(card);
+    });
+  }
+
+  // More domains
+  const mg = document.getElementById('more-grid');
+  if (mg) {
+    DOMAINS.forEach((dom, i) => {
+      if (i === activeDomain) return;
+      const btn = document.createElement('button');
+      btn.className = 'more-btn' + (completedDomains[i] ? ' completed' : '');
+      btn.innerHTML = `${dom.icon} ${dom.name}${completedDomains[i] ? ' ✓' : ''}`;
+      btn.onclick = () => startDomain(i);
+      mg.appendChild(btn);
+    });
+  }
+
+  show('results');
+
+  // Animate ring
+  const circ = 339.3;
+  const rf = document.getElementById('ring-fill');
+  if (rf) {
+    rf.style.strokeDashoffset = circ;
+    setTimeout(() => { rf.style.strokeDashoffset = circ * (1 - pct / 100); }, 300);
+  }
+  let dp = 0;
+  const iv = setInterval(() => {
+    dp = Math.min(dp + 1, pct);
+    const el = document.getElementById('ring-pct');
+    if (el) el.textContent = dp + '%';
+    if (dp >= pct) clearInterval(iv);
+  }, 16);
+
+  // Animate sub-card bars
+  setTimeout(() => {
+    document.querySelectorAll('.sc-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 500);
+
+  showToast('🎉', `${d.name} complete — ${pct}% · ${lv.label}`);
+}
+
+// ═══════════════════════════════════════════════
+//  LEVEL DESCRIPTIONS
+// ═══════════════════════════════════════════════
+function getLevelDesc(pct, domainId) {
+  const map = {
+    attrition: [
+      'Your attrition strategy is largely reactive — you find out people are leaving when they resign. Starting with structured exit data and manager readiness will deliver the fastest, most visible wins.',
+      'You have some retention processes but gaps in data quality, prediction speed, and intervention protocols are limiting your impact. Closing 2–3 key gaps will significantly reduce voluntary attrition.',
+      'Strong foundation in place. Predictive capability and tightening your insight-to-action loop are the next steps to reach elite retention performance.',
+      'You\'re operating at the top tier of retention intelligence. Focus on refinement, staying ahead of market shifts, and sharing your model as a benchmark for others.',
+    ],
+    engagement: [
+      'Engagement is largely unmeasured and action is inconsistent. Without reliable data and a closed feedback loop, disengagement silently drives attrition before it becomes visible.',
+      'Basic survey infrastructure exists but the action loop — sharing data with managers and driving accountability — is the critical missing piece preventing meaningful improvement.',
+      'Solid engagement measurement with growing accountability. Building genuine manager ownership and increasing listening frequency will take you to elite performance.',
+      'Exceptional engagement infrastructure and culture. You have the measurement, accountability, and action culture that sustains high engagement through organisational change.',
+    ],
+    diversity: [
+      'D&I is acknowledged but not yet meaningfully measured. Without data on representation, inclusion sentiment, and pay equity, initiatives remain aspirational rather than strategic.',
+      'Some D&I data exists but inclusion measurement, pay equity analysis, and demographic-segmented attrition tracking are underdeveloped. These gaps limit your ability to act with precision.',
+      'Good D&I data infrastructure. Deepening inclusion measurement, closing pay equity gaps, and building allyship capability at manager level are your clear next priorities.',
+      'You\'re among the most D&I-mature organisations. Use your data to influence industry benchmarks and share your model externally.',
+    ],
+    analytics: [
+      'HR decisions are primarily experience and intuition-based. Building even basic descriptive analytics will immediately improve your strategic credibility and business influence.',
+      'Descriptive analytics exist but fragmented data and limited business influence mean HR isn\'t yet driving decisions. Data integration and business embedding are your priorities.',
+      'Good analytics foundation. Moving from descriptive to diagnostic and predictive analytics will significantly increase your organisational influence and perceived strategic value.',
+      'Elite analytics maturity. Focus on AI-powered prediction, real-time decision support, and becoming the benchmark your peers measure themselves against.',
+    ],
+    compensation: [
+      'Your compensation strategy is largely reactive. Without market benchmarking and pay equity analysis, you\'re likely losing talent to better-paying competitors — without realising it until they resign.',
+      'Basic compensation processes exist but pay transparency, equity analysis, and benefits ROI tracking are missing. These gaps are directly and silently costing you talent.',
+      'Strong compensation fundamentals. Pay transparency, benefits personalisation, and proactive pay drift detection are your next frontier investments.',
+      'Best-in-class compensation strategy. You\'re using real-time data to stay competitive, equitable, and ahead of both regulatory requirements and market shifts.',
+    ],
+    learning: [
+      'L&D is reactive and largely unmeasured. Without a skills inventory or effectiveness tracking, you\'re spending without knowing the return — or the impact on the retention you care about.',
+      'L&D programmes exist but skills gap analysis, internal mobility pathways, and outcome measurement are underdeveloped, reducing both retention outcomes and business capability.',
+      'Good L&D infrastructure. Moving to predictive skills planning and Kirkpatrick Level 3+ measurement will transform how leadership perceives the value of L&D investment.',
+      'Outstanding L&D maturity. You\'re building a genuine learning organisation that attracts and retains talent through demonstrated, evidence-based investment in development.',
+    ],
+  };
+  const arr = map[domainId] || map.attrition;
+  return pct >= 81 ? arr[3] : pct >= 61 ? arr[2] : pct >= 36 ? arr[1] : arr[0];
+}
+
+// ═══════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════
+function scoreColor(pct) {
+  if (pct >= 75) return '#2e7d32';
+  if (pct >= 55) return '#e65100';
+  return '#c62828';
+}
+
+function scoreLabel(pct) {
+  if (pct >= 75) return '✅ Strong';
+  if (pct >= 55) return '🟡 Developing';
+  if (pct >= 35) return '🟠 Needs Work';
+  return '🔴 Critical Gap';
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0, 0);
+}
+
+function showToast(icon, msg) {
+  document.getElementById('tico').textContent = icon;
+  document.getElementById('tmsg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 3000);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('quiz').classList.contains('on')) return;
+  if (e.key === 'Enter' && !document.getElementById('btn-next').disabled) { nextQ(); return; }
+  const keyMap = { a:0, b:1, c:2, d:3, A:0, B:1, C:2, D:3 };
+  if (keyMap[e.key] !== undefined && !answered) {
+    const q = DOMAINS[activeDomain]?.qs[currentQ];
+    if (q?.type === 'mcq') {
+      const opts = document.querySelectorAll('.opt');
+      if (opts[keyMap[e.key]]) opts[keyMap[e.key]].click();
+    }
+  }
+});
+
+// Start
+init();
+</script>
+</body>
+</html>
